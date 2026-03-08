@@ -1,0 +1,53 @@
+<div class="mb-6">
+  <%= link_to "&larr; Back to #{@event.name}".html_safe, admin_event_path(@event),
+      class: "text-blue-600 hover:text-blue-800 text-sm" %>
+</div>
+
+<div class="flex justify-between items-start mb-6">
+  <div>
+    <h2 class="text-2xl font-bold text-gray-900"><%= @army_list.player_name %> — Army List</h2>
+    <p class="text-gray-500 mt-1">
+      <%= @event.name %> &middot;
+      <%= @army_list.total_points %> / <%= @event.point_cap %> <%= @event.point_value_label %>
+    </p>
+  </div>
+  <span class="px-3 py-1 rounded-full text-xs font-medium
+    <%= @army_list.submitted? ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %>">
+    <%= { "draft" => "Draft", "submitted" => "Submitted" }[@army_list.status] %>
+  </span>
+</div>
+
+<% if @items.any? %>
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Miniature</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Variant</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= @event.point_value_label %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tonnage</th>
+          <% if @event.game_system == "alpha_strike" %>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Skill</th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% @items.each do |item| %>
+          <tr>
+            <td class="px-6 py-4 text-sm text-gray-900"><%= item.miniature.display_name %></td>
+            <td class="px-6 py-4 text-sm text-gray-900"><%= item.variant.name %></td>
+            <td class="px-6 py-4 text-sm text-gray-500"><%= item.variant.send(@event.point_value_method) || "—" %></td>
+            <td class="px-6 py-4 text-sm text-gray-500"><%= item.variant.tonnage || "—" %></td>
+            <% if @event.game_system == "alpha_strike" %>
+              <td class="px-6 py-4 text-sm text-gray-500"><%= item.skill %></td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+    <p>No units on this list.</p>
+  </div>
+<% end %>

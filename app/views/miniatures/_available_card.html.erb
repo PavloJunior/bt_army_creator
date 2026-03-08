@@ -1,0 +1,32 @@
+<div id="available_miniature_<%= miniature.id %>" class="bg-white rounded-lg shadow p-4">
+  <div class="flex justify-between items-center mb-2">
+    <div>
+      <span class="font-medium text-gray-900"><%= miniature.chassis.name %></span>
+      <% if miniature.label.present? %>
+        <span class="text-sm text-gray-500 ml-1">(<%= miniature.label %>)</span>
+      <% end %>
+    </div>
+    <span class="text-xs text-gray-400"><%= miniature.chassis.tonnage %>t</span>
+  </div>
+
+  <% variants = event.available_variants_for_chassis(miniature.chassis) %>
+  <% if variants.any? %>
+    <%= form_with model: [event, army_list, ArmyListItem.new],
+        class: "flex gap-2 items-end" do |form| %>
+      <%= form.hidden_field :miniature_id, value: miniature.id %>
+      <div class="flex-1">
+        <%= form.select :variant_id,
+            variants.map { |v|
+              pv = v.send(event.point_value_method) || 0
+              ["#{v.name} (#{pv} #{event.point_value_label})", v.id]
+            },
+            { prompt: "Wybierz wariant..." },
+            class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+      </div>
+      <%= form.submit "Dodaj",
+          class: "px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+    <% end %>
+  <% else %>
+    <p class="text-xs text-gray-400 italic">Brak wariantów dla obecnych ograniczeń</p>
+  <% end %>
+</div>

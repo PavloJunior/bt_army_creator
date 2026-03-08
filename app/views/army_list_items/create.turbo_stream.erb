@@ -1,0 +1,15 @@
+<%= turbo_stream.append "army_list_items" do %>
+  <%= render partial: "army_list_items/item",
+      locals: { item: @item, event: @event, army_list: @army_list, is_owner: true } %>
+<% end %>
+
+<%= turbo_stream.replace "point_total" do %>
+  <%= render partial: "army_lists/point_total",
+      locals: { army_list: @army_list.reload, event: @event } %>
+<% end %>
+
+<%= turbo_stream.remove "available_miniature_#{@item.miniature_id}" %>
+
+<%= turbo_stream.remove "army_list_empty_state" %>
+
+<%= turbo_stream.replace "add_unit_errors", "" %>

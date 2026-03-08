@@ -1,0 +1,34 @@
+atlas_completed:
+  chassis: atlas
+  status: completed
+  variants_count: 15
+  factions_total: 2
+  factions_synced: 2
+  cards_total: 10
+  cards_synced: 10
+  error_messages: []
+  started_at: <%= 1.hour.ago.iso8601 %>
+  completed_at: <%= 30.minutes.ago.iso8601 %>
+
+atlas_running:
+  chassis: atlas
+  status: running
+  variants_count: 15
+  factions_total: 2
+  factions_synced: 1
+  cards_total: 10
+  cards_synced: 3
+  error_messages: []
+  started_at: <%= 5.minutes.ago.iso8601 %>
+
+commando_failed:
+  chassis: commando
+  status: failed
+  variants_count: 5
+  factions_total: 2
+  factions_synced: 1
+  cards_total: 0
+  cards_synced: 0
+  error_messages: ["Faction 29: Connection timeout"]
+  started_at: <%= 2.hours.ago.iso8601 %>
+  completed_at: <%= 2.hours.ago.iso8601 %>

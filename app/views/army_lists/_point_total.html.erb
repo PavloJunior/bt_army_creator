@@ -1,0 +1,19 @@
+<div id="point_total" class="text-right">
+  <% total = army_list.total_points %>
+  <% cap = event.point_cap %>
+  <% percentage = cap > 0 ? (total.to_f / cap * 100) : 0 %>
+  <span class="text-2xl font-bold
+    <%= if total > cap
+          'text-red-600'
+        elsif percentage >= 80
+          'text-yellow-600'
+        else
+          'text-green-600'
+        end %>">
+    <%= total %>
+  </span>
+  <span class="text-gray-400 text-lg">/ <%= cap %> <%= event.point_value_label %></span>
+  <% if total > cap %>
+    <p class="text-xs text-red-500 mt-1">Przekroczono limit punktów!</p>
+  <% end %>
+</div>

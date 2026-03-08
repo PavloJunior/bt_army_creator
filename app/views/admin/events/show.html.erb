@@ -1,0 +1,93 @@
+<div class="flex justify-between items-start mb-6">
+  <div>
+    <h2 class="text-2xl font-bold text-gray-900"><%= @event.name %></h2>
+    <p class="text-gray-500 mt-1">
+      <%= I18n.l(@event.date, format: :long) %> &middot;
+      <%= @event.game_system_label %> &middot;
+      limit <%= @event.point_cap %> <%= @event.point_value_label %>
+    </p>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="px-3 py-1 rounded-full text-xs font-medium
+      <%= case @event.status
+          when 'upcoming' then 'bg-blue-100 text-blue-800'
+          when 'active' then 'bg-green-100 text-green-800'
+          when 'completed' then 'bg-gray-100 text-gray-800'
+          end %>">
+      <%= { "upcoming" => "Upcoming", "active" => "Active", "completed" => "Completed" }[@event.status] %>
+    </span>
+    <% if @event.status == "upcoming" %>
+      <%= button_to "Activate", activate_admin_event_path(@event), method: :patch,
+          class: "px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm transition" %>
+    <% elsif @event.status == "active" %>
+      <%= button_to "Complete", complete_admin_event_path(@event), method: :patch,
+          class: "px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm transition",
+          data: { turbo_confirm: "Mark this event as completed?" } %>
+    <% end %>
+    <%= link_to "Edit", edit_admin_event_path(@event),
+        class: "px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm transition" %>
+  </div>
+</div>
+
+<% if @event.event_era_restrictions.any? || @event.event_faction_restrictions.any? %>
+  <div class="bg-white rounded-lg shadow p-4 mb-6">
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Restrictions</h3>
+    <% if @event.event_era_restrictions.any? %>
+      <p class="text-sm text-gray-700">
+        <span class="font-medium">Eras:</span>
+        <%= @event.event_era_restrictions.map(&:era_name).join(", ") %>
+      </p>
+    <% end %>
+    <% if @event.event_faction_restrictions.any? %>
+      <p class="text-sm text-gray-700 mt-1">
+        <span class="font-medium">Factions:</span>
+        <%= @event.event_faction_restrictions.map(&:faction_name).join(", ") %>
+      </p>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @event.notes.present? %>
+  <div class="bg-white rounded-lg shadow p-4 mb-6">
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Notes</h3>
+    <p class="text-sm text-gray-700 whitespace-pre-wrap"><%= @event.notes %></p>
+  </div>
+<% end %>
+
+<h3 class="text-lg font-semibold text-gray-900 mb-4">Army Lists (<%= @army_lists.size %>)</h3>
+
+<% if @army_lists.any? %>
+  <div class="space-y-3">
+    <% @army_lists.each do |list| %>
+      <div class="bg-white rounded-lg shadow p-4 flex justify-between items-center">
+        <div>
+          <span class="font-medium text-gray-900"><%= list.player_name %></span>
+          <span class="text-sm text-gray-500 ml-2">
+            <%= list.army_list_items.size %> units &middot;
+            <%= list.total_points %> <%= @event.point_value_label %>
+          </span>
+          <span class="ml-2 px-2 py-0.5 rounded text-xs font-medium
+            <%= list.submitted? ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %>">
+            <%= { "draft" => "Draft", "submitted" => "Submitted" }[list.status] %>
+          </span>
+        </div>
+        <div class="flex gap-2">
+          <%= link_to "View", admin_event_army_list_path(@event, list),
+              class: "text-blue-600 hover:text-blue-800 text-sm" %>
+          <% if list.submitted? %>
+            <%= button_to "Unlock", unlock_admin_event_army_list_path(@event, list),
+                method: :patch, class: "text-orange-600 hover:text-orange-800 text-sm",
+                data: { turbo_confirm: "Unlock this list? Miniatures will be released." } %>
+          <% end %>
+          <%= button_to "Delete", admin_event_army_list_path(@event, list),
+              method: :delete, class: "text-red-600 hover:text-red-800 text-sm",
+              data: { turbo_confirm: "Delete this army list?" } %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+    <p>No army lists for this event.</p>
+  </div>
+<% end %>

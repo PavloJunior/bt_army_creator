@@ -1,0 +1,53 @@
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-2xl font-bold text-gray-900">Chassis</h2>
+  <%= link_to "Add Chassis", new_admin_chassis_path,
+      class: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition" %>
+</div>
+
+<% if @chassis.any? %>
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tonnage</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Variants</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Miniatures</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sync</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% @chassis.each do |chassis| %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+              <%= link_to chassis.name, admin_chassis_path(chassis),
+                  class: "text-blue-600 hover:text-blue-800" %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= chassis.unit_type || "—" %></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"><%= chassis.tonnage || "—" %></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"><%= chassis.variants.size %></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"><%= chassis.miniatures.size %></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <%= chassis.mul_synced_at ? time_ago_in_words(chassis.mul_synced_at) + " ago" : "Never" %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
+              <%= button_to "Sync", sync_variants_admin_chassis_path(chassis),
+                  method: :post, class: "text-blue-600 hover:text-blue-800" %>
+              <%= link_to "Edit", edit_admin_chassis_path(chassis),
+                  class: "text-indigo-600 hover:text-indigo-800" %>
+              <%= button_to "Delete", admin_chassis_path(chassis),
+                  method: :delete, class: "text-red-600 hover:text-red-800",
+                  data: { turbo_confirm: "Delete #{chassis.name} and all variants?" } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+    <p>No chassis found. Add the first one to start building the miniature inventory.</p>
+  </div>
+<% end %>

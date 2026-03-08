@@ -1,0 +1,13 @@
+star_league:
+  mul_id: 10
+  name: Star League
+  start_year: 2571
+  end_year: 2780
+  sort_order: 1
+
+clan_invasion:
+  mul_id: 13
+  name: Clan Invasion
+  start_year: 3050
+  end_year: 3061
+  sort_order: 5

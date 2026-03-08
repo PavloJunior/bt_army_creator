@@ -1,0 +1,13 @@
+upcoming_event:
+  name: Test Alpha Strike Event
+  date: 2026-04-15
+  game_system: alpha_strike
+  point_cap: 200
+  status: upcoming
+
+active_event:
+  name: Active Classic BT Event
+  date: 2026-03-15
+  game_system: classic_bt
+  point_cap: 5000
+  status: active

@@ -1,0 +1,28 @@
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-3xl font-bold text-gray-900 mb-2">Wydarzenia BattleTech</h1>
+  <p class="text-gray-600 mb-8">Wybierz wydarzenie i stwórz listę armijną z dostępnych miniatur.</p>
+
+  <% if @active_events.any? %>
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Aktywne wydarzenia</h2>
+    <div class="grid gap-4 mb-8">
+      <% @active_events.each do |event| %>
+        <%= render partial: "events/event_card", locals: { event: event, active: true } %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @upcoming_events.any? %>
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Nadchodzące wydarzenia</h2>
+    <div class="grid gap-4 mb-8">
+      <% @upcoming_events.each do |event| %>
+        <%= render partial: "events/event_card", locals: { event: event, active: false } %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @upcoming_events.empty? && @active_events.empty? %>
+    <div class="bg-white rounded-lg shadow p-12 text-center">
+      <p class="text-gray-500 text-lg">Brak zaplanowanych wydarzeń. Sprawdź ponownie wkrótce!</p>
+    </div>
+  <% end %>
+</div>

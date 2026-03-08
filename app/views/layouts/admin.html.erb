@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Admin - BT Army Creator" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-gray-100 min-h-screen">
+    <div class="flex min-h-screen">
+      <!-- Sidebar -->
+      <aside class="w-64 bg-gray-900 text-white flex-shrink-0">
+        <div class="p-6">
+          <h1 class="text-xl font-bold">BT Army Creator</h1>
+          <p class="text-gray-400 text-sm mt-1">Admin Panel</p>
+        </div>
+        <nav class="mt-2">
+          <%= link_to "Dashboard", admin_root_path,
+              class: "block px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition #{request.path == admin_root_path ? 'bg-gray-800 text-white border-r-4 border-blue-500' : ''}" %>
+          <%= link_to "Chassis", admin_chassis_index_path,
+              class: "block px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition #{request.path.start_with?('/admin/chassis') ? 'bg-gray-800 text-white border-r-4 border-blue-500' : ''}" %>
+          <%= link_to "MUL Sync", admin_sync_attempts_path,
+              class: "block px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition #{request.path.start_with?('/admin/sync_attempts') ? 'bg-gray-800 text-white border-r-4 border-blue-500' : ''}" %>
+          <%= link_to "Events", admin_events_path,
+              class: "block px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition #{request.path.start_with?('/admin/events') ? 'bg-gray-800 text-white border-r-4 border-blue-500' : ''}" %>
+          <%= link_to "Jobs", "/admin/jobs",
+              class: "block px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition #{request.path.start_with?('/admin/jobs') ? 'bg-gray-800 text-white border-r-4 border-blue-500' : ''}" %>
+        </nav>
+        <div class="absolute bottom-0 w-64 p-6 border-t border-gray-800">
+          <%= button_to "Sign Out", admin_session_path, method: :delete,
+              class: "text-gray-400 hover:text-white transition text-sm" %>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="flex-1 p-8">
+        <% if flash[:notice] %>
+          <div class="mb-6 p-4 bg-green-100 border border-green-300 text-green-800 rounded-lg">
+            <%= flash[:notice] %>
+          </div>
+        <% end %>
+        <% if flash[:alert] %>
+          <div class="mb-6 p-4 bg-red-100 border border-red-300 text-red-800 rounded-lg">
+            <%= flash[:alert] %>
+          </div>
+        <% end %>
+
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>

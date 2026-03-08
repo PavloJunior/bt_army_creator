@@ -1,0 +1,104 @@
+<%= turbo_stream_from "sync_dashboard" %>
+
+<div class="mb-6">
+  <%= link_to "&larr; Back to Sync Dashboard".html_safe, admin_sync_attempts_path, class: "text-blue-600 hover:text-blue-800 text-sm" %>
+</div>
+
+<div class="flex justify-between items-center mb-6">
+  <h2 class="text-2xl font-bold text-gray-900">Sync: <%= @chassis.name %></h2>
+  <%= render "admin/sync_attempts/progress", sync_attempt: @sync_attempt %>
+</div>
+
+<!-- Sync Details -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Variants</h3>
+    <p class="mt-2 text-3xl font-bold text-gray-900"><%= @sync_attempt.variants_count %></p>
+  </div>
+
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Factions</h3>
+    <p class="mt-2 text-3xl font-bold text-gray-900"><%= @sync_attempt.factions_synced %> / <%= @sync_attempt.factions_total %></p>
+  </div>
+
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Cards</h3>
+    <p class="mt-2 text-3xl font-bold text-gray-900"><%= @sync_attempt.cards_synced %> / <%= @sync_attempt.cards_total %></p>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Timing</h3>
+    <dl class="space-y-2 text-sm">
+      <div class="flex justify-between">
+        <dt class="text-gray-500">Started</dt>
+        <dd class="text-gray-900"><%= @sync_attempt.started_at&.strftime("%b %d, %Y %H:%M:%S") || "—" %></dd>
+      </div>
+      <div class="flex justify-between">
+        <dt class="text-gray-500">Completed</dt>
+        <dd class="text-gray-900"><%= @sync_attempt.completed_at&.strftime("%b %d, %Y %H:%M:%S") || "In progress" %></dd>
+      </div>
+      <div class="flex justify-between">
+        <dt class="text-gray-500">Duration</dt>
+        <dd class="text-gray-900"><%= @sync_attempt.duration ? "#{@sync_attempt.duration}s" : "—" %></dd>
+      </div>
+    </dl>
+  </div>
+
+  <% if @sync_attempt.error_messages.present? && @sync_attempt.error_messages.any? %>
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-sm font-medium text-red-600 uppercase tracking-wide mb-2">Errors (<%= @sync_attempt.error_messages.size %>)</h3>
+      <div class="space-y-1 max-h-48 overflow-y-auto">
+        <% @sync_attempt.error_messages.each do |msg| %>
+          <p class="text-sm text-red-600"><%= msg %></p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Recent Sync History for this Chassis -->
+<h3 class="text-lg font-bold text-gray-900 mb-4">History</h3>
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Started</th>
+        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      <% @recent_attempts.each do |sa| %>
+        <tr class="hover:bg-gray-50 <%= sa.id == @sync_attempt.id ? 'bg-blue-50' : '' %>">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <% case sa.status %>
+            <% when "running" %>
+              <span class="px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Running</span>
+            <% when "completed" %>
+              <span class="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Completed</span>
+            <% when "failed" %>
+              <span class="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Failed</span>
+            <% end %>
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-600">
+            <%= sa.variants_count %> variants ·
+            <%= sa.factions_synced %>/<%= sa.factions_total %> factions ·
+            <%= sa.cards_synced %>/<%= sa.cards_total %> cards
+            <% if sa.error_messages.present? && sa.error_messages.any? %>
+              <span class="text-red-500">· <%= sa.error_messages.size %> errors</span>
+            <% end %>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <%= sa.started_at&.strftime("%b %d, %H:%M") %>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+            <%= sa.duration ? "#{sa.duration}s" : "—" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

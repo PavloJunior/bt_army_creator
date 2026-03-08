@@ -1,0 +1,31 @@
+atlas_d:
+  chassis: atlas
+  mul_id: 7433
+  name: Atlas AS7-D
+  variant_code: AS7-D
+  battle_value: 1897
+  point_value: 52
+  tonnage: 100
+  unit_type: BattleMech
+  technology: Inner Sphere
+  role: Juggernaut
+  date_introduced: "2755"
+  era_id: 10
+  era_name: Star League
+  rules_level: Introductory
+
+commando_2d:
+  chassis: commando
+  mul_id: 669
+  name: Commando COM-2D
+  variant_code: COM-2D
+  battle_value: 557
+  point_value: 16
+  tonnage: 25
+  unit_type: BattleMech
+  technology: Inner Sphere
+  role: Striker
+  date_introduced: "2486"
+  era_id: 10
+  era_name: Star League
+  rules_level: Introductory

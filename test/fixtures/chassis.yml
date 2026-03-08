@@ -1,0 +1,9 @@
+atlas:
+  name: Atlas
+  unit_type: BattleMech
+  tonnage: 100
+
+commando:
+  name: Commando
+  unit_type: BattleMech
+  tonnage: 25

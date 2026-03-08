@@ -1,0 +1,113 @@
+<%= turbo_stream_from "sync_dashboard" %>
+
+<h2 class="text-2xl font-bold text-gray-900 mb-6">MUL Sync</h2>
+
+<!-- Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Total Chassis</h3>
+    <p class="mt-2 text-3xl font-bold text-gray-900"><%= @total_chassis %></p>
+  </div>
+
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Last Synced</h3>
+    <p class="mt-2 text-3xl font-bold text-gray-900">
+      <%= @last_completed ? time_ago_in_words(@last_completed.completed_at) + " ago" : "Never" %>
+    </p>
+  </div>
+
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Active Syncs</h3>
+    <p class="mt-2 text-3xl font-bold <%= @active_syncs_count > 0 ? 'text-yellow-600' : 'text-gray-900' %>">
+      <%= @active_syncs_count %>
+    </p>
+  </div>
+</div>
+
+<!-- Chassis Sync Table -->
+<% if @chassis_with_syncs.any? %>
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chassis</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Variants</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200" data-controller="variant-expand">
+        <% @chassis_with_syncs.each do |chassis| %>
+          <% attempt = @latest_attempts[chassis.id] %>
+          <tr class="hover:bg-gray-50 cursor-pointer" data-action="click->variant-expand#toggle" data-variant-expand-id-param="<%= chassis.id %>">
+            <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
+              <span class="mr-2 text-gray-400" data-variant-expand-target="arrow" data-id="<%= chassis.id %>">&#9654;</span>
+              <%= link_to chassis.name, admin_chassis_path(chassis), class: "text-blue-600 hover:text-blue-800" %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right"><%= chassis.variants.size %></td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <% if attempt %>
+                <%= render "admin/sync_attempts/progress", sync_attempt: attempt %>
+              <% else %>
+                <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Never synced</span>
+              <% end %>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+              <%= button_to "Sync", sync_variants_admin_chassis_path(chassis),
+                  method: :post, class: "text-blue-600 hover:text-blue-800 font-medium",
+                  data: { turbo_confirm: "Sync #{chassis.name} with MUL?" } %>
+            </td>
+          </tr>
+          <!-- Expandable sync history -->
+          <tr class="hidden" data-variant-expand-target="details" data-id="<%= chassis.id %>">
+            <td colspan="4" class="px-6 py-4 bg-gray-50">
+              <% recent = @recent_attempts_by_chassis[chassis.id] || [] %>
+              <% if recent.any? %>
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Recent Sync History</h4>
+                <div class="space-y-2">
+                  <% recent.each do |sa| %>
+                    <div class="flex items-center justify-between text-sm">
+                      <div class="flex items-center gap-3">
+                        <% case sa.status %>
+                        <% when "running" %>
+                          <span class="px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Running</span>
+                        <% when "completed" %>
+                          <span class="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Completed</span>
+                        <% when "failed" %>
+                          <span class="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Failed</span>
+                        <% end %>
+                        <span class="text-gray-600">
+                          <%= sa.variants_count %> variants ·
+                          <%= sa.factions_synced %>/<%= sa.factions_total %> factions ·
+                          <%= sa.cards_synced %>/<%= sa.cards_total %> cards
+                        </span>
+                      </div>
+                      <div class="text-gray-500">
+                        <%= sa.started_at&.strftime("%b %d, %H:%M") %>
+                        <% if sa.duration %> · <%= sa.duration %>s<% end %>
+                      </div>
+                    </div>
+                    <% if sa.error_messages.present? && sa.error_messages.any? %>
+                      <div class="ml-6 text-xs text-red-600">
+                        <%= sa.error_messages.last(3).join("; ") %>
+                        <% if sa.error_messages.size > 3 %>
+                          <span class="text-gray-500">...and <%= sa.error_messages.size - 3 %> more</span>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  <% end %>
+                </div>
+              <% else %>
+                <p class="text-sm text-gray-500">No sync history for this chassis.</p>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+    <p>No chassis found. Add chassis first to start syncing.</p>
+  </div>
+<% end %>

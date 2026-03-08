@@ -1,0 +1,9 @@
+federated_suns:
+  mul_id: 29
+  name: Federated Suns
+  category: Inner Sphere
+
+clan_wolf:
+  mul_id: 24
+  name: Clan Wolf
+  category: Clan

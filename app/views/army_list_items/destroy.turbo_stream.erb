@@ -1,0 +1,11 @@
+<%= turbo_stream.remove dom_id(@item) %>
+
+<%= turbo_stream.replace "point_total" do %>
+  <%= render partial: "army_lists/point_total",
+      locals: { army_list: @army_list.reload, event: @event } %>
+<% end %>
+
+<%= turbo_stream.append "available_miniatures" do %>
+  <%= render partial: "miniatures/available_card",
+      locals: { miniature: @miniature, event: @event, army_list: @army_list } %>
+<% end %>
