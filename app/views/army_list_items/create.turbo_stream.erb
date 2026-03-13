@@ -8,7 +8,12 @@
       locals: { army_list: @army_list.reload, event: @event } %>
 <% end %>
 
-<%= turbo_stream.remove "available_miniature_#{@item.miniature_id}" %>
+<%= turbo_stream.replace "available_chassis_#{@chassis.id}" do %>
+  <%= render partial: "chassis/available_card", locals: {
+    chassis: @chassis, available_count: @available_count, total_count: @total_count,
+    variants: @variants, event: @event, army_list: @army_list
+  } %>
+<% end %>
 
 <%= turbo_stream.remove "army_list_empty_state" %>
 

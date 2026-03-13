@@ -33,8 +33,12 @@
 <div class="bg-white rounded-lg shadow mb-6">
   <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
     <h2 class="text-lg font-semibold text-gray-800">Miniatures</h2>
-    <%= link_to "Add Miniature", new_admin_chassis_miniature_path(@chassis),
-        class: "text-sm text-green-600 hover:text-green-800 font-medium" %>
+    <div class="flex gap-4">
+      <%= link_to "Add Miniature", new_admin_chassis_miniature_path(@chassis),
+          class: "text-sm text-green-600 hover:text-green-800 font-medium" %>
+      <%= link_to "Bulk Add", bulk_new_admin_chassis_miniatures_path(@chassis),
+          class: "text-sm text-blue-600 hover:text-blue-800 font-medium" %>
+    </div>
   </div>
   <% if @miniatures.any? %>
     <div class="px-6 py-4 flex flex-wrap gap-2">

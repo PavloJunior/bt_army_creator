@@ -22,7 +22,7 @@ module ArmyListOwnership
     ids << army_list.id unless ids.include?(army_list.id)
     cookies.signed[:army_list_ids] = {
       value: ids,
-      expires: army_list.event.date + 1.day,
+      expires: (army_list.event.date + 1.day).end_of_day,
       httponly: true
     }
   end

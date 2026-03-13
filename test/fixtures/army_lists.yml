@@ -2,3 +2,4 @@ draft_list:
   event: upcoming_event
   player_name: Test Player
   status: draft
+  tech_base: mixed

@@ -7,3 +7,8 @@ commando:
   name: Commando
   unit_type: BattleMech
   tonnage: 25
+
+timber_wolf:
+  name: Timber Wolf
+  unit_type: BattleMech
+  tonnage: 75

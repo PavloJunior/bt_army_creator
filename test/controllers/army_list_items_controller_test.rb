@@ -20,6 +20,54 @@ class ArmyListItemsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "create adds item with auto-assigned miniature" do
+    @item.destroy # free up the atlas mini
+
+    assert_difference("ArmyListItem.count", 1) do
+      post event_army_list_army_list_items_path(@event, @army_list),
+        params: { army_list_item: { chassis_id: chassis(:atlas).id, variant_id: @variant.id } },
+        as: :turbo_stream
+    end
+
+    assert_response :success
+    item = @army_list.army_list_items.last
+    assert_equal @miniature, item.miniature
+    assert_equal @variant, item.variant
+  end
+
+  test "create returns error when no miniatures available" do
+    # atlas_mini is already used in @item from setup
+    assert_no_difference("ArmyListItem.count") do
+      post event_army_list_army_list_items_path(@event, @army_list),
+        params: { army_list_item: { chassis_id: chassis(:atlas).id, variant_id: @variant.id } },
+        as: :turbo_stream
+    end
+
+    assert_response :success
+    assert_includes response.body, "Brak"
+  end
+
+  test "create responds with turbo_stream replacing chassis card" do
+    @item.destroy
+
+    post event_army_list_army_list_items_path(@event, @army_list),
+      params: { army_list_item: { chassis_id: chassis(:atlas).id, variant_id: @variant.id } },
+      as: :turbo_stream
+
+    assert_response :success
+    assert_includes response.content_type, "turbo-stream"
+    assert_includes response.body, "available_chassis_#{chassis(:atlas).id}"
+  end
+
+  test "destroy removes item and updates chassis card" do
+    delete event_army_list_army_list_item_path(@event, @army_list, @item),
+      as: :turbo_stream
+
+    assert_response :success
+    assert_raises(ActiveRecord::RecordNotFound) { @item.reload }
+    assert_includes response.body, "available_chassis_#{chassis(:atlas).id}"
+  end
+
   test "update changes skill level" do
     patch event_army_list_army_list_item_path(@event, @army_list, @item),
       params: { army_list_item: { skill: 2 } },
@@ -68,5 +116,18 @@ class ArmyListItemsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.content_type, "turbo-stream"
+  end
+
+  test "create rejects variant with wrong tech base" do
+    @item.destroy
+    @army_list.update!(tech_base: "clan")
+
+    assert_no_difference("ArmyListItem.count") do
+      post event_army_list_army_list_items_path(@event, @army_list),
+        params: { army_list_item: { chassis_id: chassis(:atlas).id, variant_id: @variant.id } },
+        as: :turbo_stream
+    end
+
+    assert_response :success
   end
 end

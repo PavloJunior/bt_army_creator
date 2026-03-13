@@ -1,0 +1,18 @@
+<h2 class="text-2xl font-bold text-gray-900 mb-6">Bulk Add Miniatures for <%= @chassis.name %></h2>
+
+<div class="max-w-lg bg-white rounded-lg shadow p-6">
+  <%= form_with url: bulk_create_admin_chassis_miniatures_path(@chassis), method: :post, class: "space-y-4" do |form| %>
+    <div>
+      <%= form.label :count, "How many?", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.number_field :count, value: 1, min: 1, max: 100, autofocus: true,
+          class: "w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+    </div>
+
+    <div class="flex gap-3">
+      <%= form.submit "Add Miniatures",
+          class: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+      <%= link_to "Cancel", admin_chassis_path(@chassis),
+          class: "px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition" %>
+    </div>
+  <% end %>
+</div>

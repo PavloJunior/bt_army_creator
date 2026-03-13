@@ -8,6 +8,7 @@
     <h2 class="text-2xl font-bold text-gray-900"><%= @army_list.player_name %> — Army List</h2>
     <p class="text-gray-500 mt-1">
       <%= @event.name %> &middot;
+      <%= @army_list.tech_base_label %> &middot;
       <%= @army_list.total_points %> / <%= @event.point_cap %> <%= @event.point_value_label %>
     </p>
   </div>
@@ -36,7 +37,7 @@
           <tr>
             <td class="px-6 py-4 text-sm text-gray-900"><%= item.miniature.display_name %></td>
             <td class="px-6 py-4 text-sm text-gray-900"><%= item.variant.name %></td>
-            <td class="px-6 py-4 text-sm text-gray-500"><%= item.variant.send(@event.point_value_method) || "—" %></td>
+            <td class="px-6 py-4 text-sm text-gray-500"><%= @event.game_system == "alpha_strike" ? item.adjusted_point_value : item.variant.battle_value || "—" %></td>
             <td class="px-6 py-4 text-sm text-gray-500"><%= item.variant.tonnage || "—" %></td>
             <% if @event.game_system == "alpha_strike" %>
               <td class="px-6 py-4 text-sm text-gray-500"><%= item.skill %></td>

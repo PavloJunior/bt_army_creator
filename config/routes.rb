@@ -11,10 +11,18 @@ Rails.application.routes.draw do
     resources :sync_attempts, only: [ :index, :show ]
 
     resources :chassis do
+      collection do
+        get :search
+      end
       member do
         post :sync_variants
       end
-      resources :miniatures, only: [ :new, :create, :edit, :update, :destroy ]
+      resources :miniatures, only: [ :new, :create, :edit, :update, :destroy ] do
+        collection do
+          get :bulk_new
+          post :bulk_create
+        end
+      end
     end
 
     resources :events do

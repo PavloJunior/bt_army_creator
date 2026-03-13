@@ -21,9 +21,17 @@ class ArmyListsController < ApplicationController
 
   def show
     @items = @army_list.army_list_items.includes(miniature: :chassis, variant: [])
-    @available_miniatures = @event.available_miniatures
-                                  .where.not(id: @army_list.army_list_items.select(:miniature_id))
-                                  .order("chassis.name")
+
+    used_ids = @army_list.army_list_items.pluck(:miniature_id)
+    locked_ids = @event.miniature_locks.pluck(:miniature_id)
+    excluded_ids = (used_ids + locked_ids).uniq
+
+    all_minis_by_chassis = Miniature.includes(:chassis).group_by(&:chassis)
+    @chassis_data = all_minis_by_chassis.map do |chassis, minis|
+      available = minis.reject { |m| excluded_ids.include?(m.id) }
+      [ chassis, available.size, minis.size ]
+    end.sort_by { |c, _, _| c.name }
+
     @is_owner = owner_of_army_list?(@army_list) || admin_signed_in?
   end
 
@@ -42,7 +50,7 @@ class ArmyListsController < ApplicationController
   def submit
     @army_list.submit!
     redirect_to event_army_list_path(@event, @army_list),
-                notice: "Lista armijna zgłoszona! Twoje miniatury są zablokowane."
+                notice: "Lista armijna zgłoszona! Twoje modele są zablokowane."
   rescue ArmyList::LockConflictError => e
     redirect_to event_army_list_path(@event, @army_list), alert: e.message
   end
@@ -58,6 +66,6 @@ class ArmyListsController < ApplicationController
   end
 
   def army_list_params
-    params.require(:army_list).permit(:player_name)
+    params.require(:army_list).permit(:player_name, :tech_base)
   end
 end

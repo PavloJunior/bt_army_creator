@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_03_194459) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_12_142123) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -58,6 +58,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_03_194459) do
     t.string "player_name", null: false
     t.string "status", default: "draft", null: false
     t.datetime "submitted_at"
+    t.string "tech_base", default: "mixed", null: false
     t.datetime "updated_at", null: false
     t.index ["event_id"], name: "index_army_lists_on_event_id"
   end

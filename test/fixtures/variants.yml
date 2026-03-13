@@ -29,3 +29,19 @@ commando_2d:
   era_id: 10
   era_name: Star League
   rules_level: Introductory
+
+timber_wolf_prime:
+  chassis: timber_wolf
+  mul_id: 3152
+  name: Timber Wolf (Mad Cat) Prime
+  variant_code: Prime
+  battle_value: 2737
+  point_value: 54
+  tonnage: 75
+  unit_type: BattleMech
+  technology: Clan
+  role: Brawler
+  date_introduced: "2945"
+  era_id: 10
+  era_name: Star League
+  rules_level: Standard

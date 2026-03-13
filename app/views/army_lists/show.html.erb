@@ -5,7 +5,7 @@
     <div>
       <h1 class="text-2xl font-bold text-gray-900"><%= @army_list.player_name %> — Lista armijna</h1>
       <p class="text-gray-500 mt-1">
-        <%= @event.name %> &middot; <%= @event.game_system_label %>
+        <%= @event.name %> &middot; <%= @event.game_system_label %> &middot; <%= @army_list.tech_base_label %>
       </p>
     </div>
     <%= render partial: "army_lists/point_total", locals: { army_list: @army_list, event: @event } %>
@@ -13,7 +13,7 @@
 
   <% if @army_list.submitted? %>
     <div class="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg">
-      Lista zgłoszona <%= I18n.l(@army_list.submitted_at, format: :long) %>. Miniatury są zablokowane na to wydarzenie.
+      Lista zgłoszona <%= I18n.l(@army_list.submitted_at, format: :long) %>. Modele są zablokowane na to wydarzenie.
     </div>
   <% end %>
 
@@ -29,7 +29,7 @@
 
       <% if @items.empty? && !@army_list.submitted? %>
         <div id="army_list_empty_state" class="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-          <p>Brak jednostek. Dodaj miniatury z dostępnej puli.</p>
+          <p>Brak jednostek. Dodaj modele z dostępnej puli.</p>
         </div>
       <% end %>
 
@@ -38,26 +38,29 @@
           <%= button_to "Zgłoś listę armijną", submit_event_army_list_path(@event, @army_list),
               method: :patch,
               class: "w-full py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition",
-              data: { turbo_confirm: "Zgłosić tę listę? Twoje miniatury zostaną zablokowane na to wydarzenie." } %>
+              data: { turbo_confirm: "Zgłosić tę listę? Twoje modele zostaną zablokowane na to wydarzenie." } %>
         </div>
       <% end %>
     </div>
 
-    <!-- Available Miniatures -->
+    <!-- Available Chassis -->
     <% unless @army_list.submitted? %>
       <div>
-        <h2 class="text-lg font-semibold text-gray-800 mb-3">Dostępne miniatury</h2>
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">Dostępne modele</h2>
         <div id="available_miniatures" class="space-y-2">
-          <% @available_miniatures.group_by(&:chassis).each do |chassis, minis| %>
-            <% minis.each do |mini| %>
-              <%= render partial: "miniatures/available_card", locals: { miniature: mini, event: @event, army_list: @army_list } %>
-            <% end %>
+          <% @chassis_data.each do |chassis, available_count, total_count| %>
+            <% variants = @event.available_variants_for_chassis(chassis, tech_base: @army_list.tech_base) %>
+            <% next if variants.empty? && available_count > 0 %>
+            <%= render partial: "chassis/available_card", locals: {
+              chassis: chassis, available_count: available_count, total_count: total_count,
+              variants: variants, event: @event, army_list: @army_list
+            } %>
           <% end %>
         </div>
 
-        <% if @available_miniatures.empty? %>
+        <% if @chassis_data.empty? %>
           <div class="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-            <p>Brak dostępnych miniatur.</p>
+            <p>Brak dostępnych modeli.</p>
           </div>
         <% end %>
       </div>

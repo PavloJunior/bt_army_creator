@@ -5,7 +5,9 @@
       locals: { army_list: @army_list.reload, event: @event } %>
 <% end %>
 
-<%= turbo_stream.append "available_miniatures" do %>
-  <%= render partial: "miniatures/available_card",
-      locals: { miniature: @miniature, event: @event, army_list: @army_list } %>
+<%= turbo_stream.replace "available_chassis_#{@chassis.id}" do %>
+  <%= render partial: "chassis/available_card", locals: {
+    chassis: @chassis, available_count: @available_count, total_count: @total_count,
+    variants: @variants, event: @event, army_list: @army_list
+  } %>
 <% end %>

@@ -2,3 +2,8 @@ atlas_d_fedsuns:
   variant: atlas_d
   faction_id: 29
   faction_name: Federated Suns
+
+timber_wolf_prime_clan_wolf:
+  variant: timber_wolf_prime
+  faction_id: 24
+  faction_name: Clan Wolf

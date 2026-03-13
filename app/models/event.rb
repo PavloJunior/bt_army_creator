@@ -25,16 +25,29 @@ class Event < ApplicationRecord
     game_system == "classic_bt" ? "Classic BattleTech" : "Alpha Strike"
   end
 
-  def available_variants_for_chassis(chassis)
+  def available_variants_for_chassis(chassis, tech_base: nil)
     scope = chassis.variants.usable
+
     if event_era_restrictions.any?
       scope = scope.where(era_id: event_era_restrictions.pluck(:era_mul_id))
     end
+
+    faction_filter_ids = nil
+
     if event_faction_restrictions.any?
-      faction_mul_ids = event_faction_restrictions.pluck(:faction_mul_id)
-      scope = scope.joins(:variant_factions)
-                   .where(variant_factions: { faction_id: faction_mul_ids })
+      faction_filter_ids = event_faction_restrictions.pluck(:faction_mul_id)
     end
+
+    if tech_base.present? && tech_base != "mixed"
+      tech_ids = Faction.for_tech_base(tech_base).pluck(:mul_id)
+      faction_filter_ids = faction_filter_ids ? (faction_filter_ids & tech_ids) : tech_ids
+    end
+
+    if faction_filter_ids
+      scope = scope.joins(:variant_factions)
+                   .where(variant_factions: { faction_id: faction_filter_ids })
+    end
+
     scope.distinct
   end
 

@@ -16,6 +16,20 @@ module Admin
       end
     end
 
+    def bulk_new
+    end
+
+    def bulk_create
+      count = params[:count].to_i
+      if count < 1 || count > 100
+        redirect_to admin_chassis_path(@chassis), alert: "Count must be between 1 and 100."
+        return
+      end
+
+      @chassis.miniatures.insert_all(Array.new(count) { { chassis_id: @chassis.id, created_at: Time.current, updated_at: Time.current } })
+      redirect_to admin_chassis_path(@chassis), notice: "#{count} miniature#{'s' if count != 1} added to #{@chassis.name}."
+    end
+
     def edit
     end
 

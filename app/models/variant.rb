@@ -10,6 +10,11 @@ class Variant < ApplicationRecord
   scope :introduced_by, ->(year) { where("CAST(date_introduced AS INTEGER) <= ?", year) }
   scope :for_technology, ->(tech) { where(technology: tech) }
   scope :usable, -> { where("battle_value > 0 OR point_value > 0") }
+  scope :for_tech_base, ->(tech_base) {
+    return all if tech_base.blank? || tech_base == "mixed"
+    faction_mul_ids = Faction.for_tech_base(tech_base).pluck(:mul_id)
+    joins(:variant_factions).where(variant_factions: { faction_id: faction_mul_ids }).distinct
+  }
   scope :unusable, -> { where(battle_value: [ 0, nil ], point_value: [ 0, nil ]) }
 
   def usable?

@@ -6,9 +6,38 @@ class ArmyListItemsController < ApplicationController
   before_action :authorize_army_list!
 
   def create
-    @item = @army_list.army_list_items.build(army_list_item_params)
+    permitted = army_list_item_params
+    chassis = Chassis.find(permitted[:chassis_id])
+
+    used_ids = @army_list.army_list_items.pluck(:miniature_id)
+    locked_ids = @event.miniature_locks.pluck(:miniature_id)
+    miniature = chassis.miniatures
+      .where.not(id: used_ids + locked_ids)
+      .order(:id).first
+
+    if miniature.nil?
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            "add_unit_errors",
+            partial: "army_list_items/errors",
+            locals: { errors: [ "Brak dostępnych modeli dla #{chassis.name}" ] }
+          )
+        end
+        format.html { redirect_to event_army_list_path(@event, @army_list), alert: "Brak dostępnych modeli dla #{chassis.name}" }
+      end
+      return
+    end
+
+    @item = @army_list.army_list_items.build(
+      miniature: miniature,
+      variant_id: permitted[:variant_id]
+    )
 
     if @item.save
+      @chassis = chassis
+      compute_chassis_locals(@chassis)
+
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to event_army_list_path(@event, @army_list) }
@@ -52,8 +81,10 @@ class ArmyListItemsController < ApplicationController
 
   def destroy
     @item = @army_list.army_list_items.find(params[:id])
-    @miniature = @item.miniature
+    @chassis = @item.miniature.chassis
     @item.destroy
+
+    compute_chassis_locals(@chassis)
 
     respond_to do |format|
       format.turbo_stream
@@ -62,6 +93,15 @@ class ArmyListItemsController < ApplicationController
   end
 
   private
+
+  def compute_chassis_locals(chassis)
+    used_ids = @army_list.army_list_items.reload.pluck(:miniature_id)
+    locked_ids = @event.miniature_locks.pluck(:miniature_id)
+    @available_count = chassis.miniatures.where.not(id: used_ids + locked_ids).count
+    @total_count = chassis.miniatures.count
+    @variants = @event.available_variants_for_chassis(chassis, tech_base: @army_list.tech_base)
+    @chassis = chassis
+  end
 
   def ensure_card_exists(item)
     card = VariantCard.find_by(variant: item.variant, skill: item.skill)
@@ -79,7 +119,7 @@ class ArmyListItemsController < ApplicationController
   end
 
   def army_list_item_params
-    params.require(:army_list_item).permit(:miniature_id, :variant_id)
+    params.require(:army_list_item).permit(:chassis_id, :variant_id)
   end
 
   def skill_params

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static values = { url: String }
+  static values = { url: String, itemId: String }
 
   connect() {
     this.attempts = 0
@@ -26,7 +26,13 @@ export default class extends Controller {
       fetch(this.urlValue)
         .then(response => {
           if (response.ok) {
-            window.Turbo.visit(window.location.href, { action: "replace" })
+            const container = document.getElementById(this.itemIdValue)
+            if (container) {
+              const img = document.createElement("img")
+              img.src = response.url
+              img.className = "w-full rounded border border-gray-200"
+              container.replaceChildren(img)
+            }
           } else {
             this.poll()
           }

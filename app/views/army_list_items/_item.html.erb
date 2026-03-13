@@ -7,7 +7,7 @@
       <% end %>
       <div class="text-sm text-gray-500 mt-0.5">
         <%= item.variant.tonnage %>t &middot;
-        <%= item.variant.send(event.point_value_method) || 0 %> <%= event.point_value_label %> &middot;
+        <%= event.game_system == "alpha_strike" ? item.adjusted_point_value : item.variant.battle_value %> <%= event.point_value_label %> &middot;
         <%= item.variant.role || "Nieznana" %>
         <% if event.game_system == "alpha_strike" %>
           &middot; Skill: <%= item.skill %>

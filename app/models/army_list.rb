@@ -1,6 +1,8 @@
 class ArmyList < ApplicationRecord
   class LockConflictError < StandardError; end
 
+  TECH_BASES = %w[inner_sphere clan mixed].freeze
+
   belongs_to :event
   has_many :army_list_items, dependent: :destroy
   has_many :miniatures, through: :army_list_items
@@ -8,10 +10,19 @@ class ArmyList < ApplicationRecord
 
   validates :player_name, presence: true
   validates :status, inclusion: { in: %w[draft submitted] }
+  validates :tech_base, presence: true, inclusion: { in: TECH_BASES }
+
+  def tech_base_label
+    { "inner_sphere" => "Inner Sphere", "clan" => "Clan", "mixed" => "Mixed" }[tech_base]
+  end
 
   def total_points
     army_list_items.includes(:variant).sum do |item|
-      item.variant.send(event.point_value_method) || 0
+      if event.game_system == "alpha_strike"
+        item.adjusted_point_value || 0
+      else
+        item.variant.battle_value || 0
+      end
     end
   end
 
@@ -61,12 +72,7 @@ class ArmyList < ApplicationRecord
   private
 
   def broadcast_lock_updates
-    army_list_items.includes(:miniature).each do |item|
-      Turbo::StreamsChannel.broadcast_remove_to(
-        "event_#{event_id}_miniatures",
-        target: "available_miniature_#{item.miniature_id}"
-      )
-    end
+    Turbo::StreamsChannel.broadcast_refresh_to("event_#{event_id}_miniatures")
   end
 
   def broadcast_unlock_updates

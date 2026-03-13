@@ -5,3 +5,7 @@ atlas_mini:
 commando_mini:
   chassis: commando
   label: Commando #1
+
+timber_wolf_mini:
+  chassis: timber_wolf
+  label: Timber Wolf #1

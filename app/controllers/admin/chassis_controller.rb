@@ -44,6 +44,51 @@ module Admin
       end
     end
 
+    def search
+      search_term = params[:search_term].to_s.strip
+      if search_term.blank?
+        redirect_to new_admin_chassis_path, alert: "Please enter a search term."
+        return
+      end
+
+      variants_data = MulClient.fetch_variants(search_term)
+      chassis_groups = variants_data
+        .group_by { |v| v["Class"] }
+        .reject { |name, _| name.blank? }
+
+      if chassis_groups.empty?
+        redirect_to new_admin_chassis_path, alert: "No chassis found for '#{search_term}'."
+        return
+      end
+
+      existing_names = Chassis.where(name: chassis_groups.keys).pluck(:name).to_set
+      new_groups = chassis_groups.reject { |name, _| existing_names.include?(name) }
+
+      if new_groups.size == 1
+        chassis = Chassis.create!(name: new_groups.keys.first)
+        SyncChassisJob.perform_later(chassis.id)
+        redirect_to admin_chassis_index_path, notice: "#{chassis.name} added. Syncing variants from MUL..."
+        return
+      end
+
+      @search_term = search_term
+      @existing_names = existing_names
+      @chassis_groups = chassis_groups.map do |name, variants|
+        first = variants.first
+        {
+          name: name,
+          unit_type: first.dig("Type", "Name"),
+          tonnage: first["Tonnage"]&.to_i,
+          variant_count: variants.size,
+          image_url: first["ImageUrl"]
+        }
+      end.sort_by { |g| g[:name] }
+
+      render :search_results
+    rescue MulClient::ApiError => e
+      redirect_to new_admin_chassis_path, alert: "MUL API error: #{e.message}"
+    end
+
     def sync_variants
       SyncChassisJob.perform_later(@chassis.id)
       redirect_to admin_chassis_path(@chassis), notice: "Syncing variants for #{@chassis.name}..."
