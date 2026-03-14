@@ -2,6 +2,7 @@
 
 # Eras (from masterunitlist.info filter page)
 eras = [
+  { mul_id: 9,   name: "Age of War",                        start_year: 2005, end_year: 2570, sort_order: 0 },
   { mul_id: 10,  name: "Star League",                       start_year: 2571, end_year: 2780, sort_order: 1 },
   { mul_id: 11,  name: "Early Succession War",              start_year: 2781, end_year: 2900, sort_order: 2 },
   { mul_id: 255, name: "Late Succession War - LosTech",     start_year: 2901, end_year: 3019, sort_order: 3 },

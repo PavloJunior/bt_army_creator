@@ -24,20 +24,22 @@
 }.index_by { |v| v[:id] }.to_json %>
 
 <div id="available_chassis_<%= chassis.id %>"
-     class="bg-white rounded-lg shadow p-4 <%= 'opacity-50' if disabled %>"
+     class="bg-hud-bg-panel border border-hud-border rounded p-4 <%= 'opacity-40' if disabled %>"
      data-controller="variant-preview"
      data-variant-preview-variants-value="<%= variants_json %>"
      data-variant-preview-game-system-value="<%= event.game_system %>">
 
-  <div class="flex justify-between items-center mb-2">
+  <div class="flex justify-between items-center mb-3">
     <div>
-      <span class="font-medium text-gray-900"><%= chassis.name %></span>
-      <span class="text-xs text-gray-400 ml-1"><%= chassis.tonnage %>t</span>
+      <span class="font-hud-heading font-semibold text-hud-green"><%= chassis.name %></span>
+      <span class="text-xs text-hud-text-muted ml-1"><%= chassis.tonnage %>t</span>
     </div>
     <% if disabled %>
-      <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">Brak dostępnych</span>
+      <span class="text-xs px-2 py-0.5 rounded border border-hud-border text-hud-text-muted uppercase">
+        Brak dostępnych
+      </span>
     <% else %>
-      <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
+      <span class="text-xs px-2 py-0.5 rounded border border-hud-green text-hud-green">
         <%= available_count %> <%= available_count == 1 ? "dostępna" : "dostępne" %>
       </span>
     <% end %>
@@ -54,15 +56,15 @@
               ["#{v.name} (#{pv} #{event.point_value_label})", v.id]
             },
             { prompt: "Wybierz wariant..." },
-            class: "w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+            class: "w-full px-2 py-1.5 text-sm rounded hud-select",
             data: { variant_preview_target: "select", action: "change->variant-preview#load" } %>
       </div>
       <%= form.submit "Dodaj",
-          class: "px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition cursor-pointer",
+          class: "hud-btn-primary px-3 py-1.5 text-sm rounded cursor-pointer",
           data: { variant_preview_target: "submit" } %>
     <% end %>
   <% elsif variants.empty? && !disabled %>
-    <p class="text-xs text-gray-400 italic">Brak wariantów dla obecnych ograniczeń</p>
+    <p class="text-xs text-hud-text-muted italic">Brak wariantów dla obecnych ograniczeń</p>
   <% end %>
 
   <div data-variant-preview-target="details"></div>

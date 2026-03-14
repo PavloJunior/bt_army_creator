@@ -99,7 +99,8 @@ class ArmyListItemsController < ApplicationController
     locked_ids = @event.miniature_locks.pluck(:miniature_id)
     @available_count = chassis.miniatures.where.not(id: used_ids + locked_ids).count
     @total_count = chassis.miniatures.count
-    @variants = @event.available_variants_for_chassis(chassis, tech_base: @army_list.tech_base)
+    faction_filter = @army_list.army_list_factions.pluck(:faction_mul_id).presence
+    @variants = @event.available_variants_for_chassis(chassis, tech_base: @army_list.tech_base, faction_mul_ids: faction_filter)
     @chassis = chassis
   end
 

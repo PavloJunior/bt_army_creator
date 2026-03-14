@@ -18,3 +18,10 @@
 <%= turbo_stream.remove "army_list_empty_state" %>
 
 <%= turbo_stream.replace "add_unit_errors", "" %>
+
+<%= turbo_stream.update "army_item_count", @army_list.army_list_items.size.to_s %>
+
+<%= turbo_stream.replace "army_list_actions" do %>
+  <%= render partial: "army_lists/actions",
+      locals: { army_list: @army_list, event: @event, is_owner: true } %>
+<% end %>

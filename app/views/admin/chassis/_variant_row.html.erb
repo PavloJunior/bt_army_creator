@@ -1,33 +1,33 @@
 <% card = variant.card_for_skill(4) %>
-<tr class="<%= variant.usable? ? 'hover:bg-gray-50' : 'hover:bg-gray-50 opacity-50' %> cursor-pointer"
+<tr class="<%= variant.usable? ? 'hover:bg-hud-bg-panel-hover' : 'hover:bg-hud-bg-panel-hover opacity-50' %> cursor-pointer"
     data-action="click->variant-expand#toggle">
-  <td class="px-4 py-3 text-gray-400 text-sm" data-variant-expand-target="arrow">&#9654;</td>
-  <td class="px-4 py-3 text-sm font-medium text-gray-900">
+  <td class="px-4 py-3 text-hud-text-muted text-sm" data-variant-expand-target="arrow">&#9654;</td>
+  <td class="px-4 py-3 text-sm font-medium text-hud-green">
     <%= variant.name %>
     <% unless variant.usable? %>
-      <span class="ml-1 px-1.5 py-0.5 text-xs bg-red-100 text-red-700 rounded">unusable</span>
+      <span class="ml-1 px-1.5 py-0.5 text-xs bg-hud-red/10 text-hud-red rounded">unusable</span>
     <% end %>
   </td>
-  <td class="px-4 py-3 text-sm text-gray-500"><%= variant.variant_code %></td>
-  <td class="px-4 py-3 text-sm text-gray-500 text-right" data-sort-value="<%= variant.point_value || 0 %>"><%= variant.point_value || "—" %></td>
-  <td class="px-4 py-3 text-sm text-gray-500 text-right" data-sort-value="<%= variant.battle_value || 0 %>"><%= variant.battle_value || "—" %></td>
-  <td class="px-4 py-3 text-sm text-gray-500 text-right" data-sort-value="<%= variant.tonnage || 0 %>"><%= variant.tonnage || "—" %></td>
-  <td class="px-4 py-3 text-sm text-gray-500"><%= variant.role || "—" %></td>
-  <td class="px-4 py-3 text-sm text-gray-500"><%= variant.technology || "—" %></td>
-  <td class="px-4 py-3 text-sm text-gray-500"><%= variant.era_name || "—" %></td>
-  <td class="px-4 py-3 text-sm text-gray-500 text-right" data-sort-value="<%= variant.date_introduced || 0 %>"><%= variant.date_introduced || "—" %></td>
-  <td class="px-4 py-3 text-sm text-gray-500"><%= variant.rules_level || "—" %></td>
+  <td class="px-4 py-3 text-sm text-hud-text-dim"><%= variant.variant_code %></td>
+  <td class="px-4 py-3 text-sm text-hud-text-dim text-right" data-sort-value="<%= variant.point_value || 0 %>"><%= variant.point_value || "—" %></td>
+  <td class="px-4 py-3 text-sm text-hud-text-dim text-right" data-sort-value="<%= variant.battle_value || 0 %>"><%= variant.battle_value || "—" %></td>
+  <td class="px-4 py-3 text-sm text-hud-text-dim text-right" data-sort-value="<%= variant.tonnage || 0 %>"><%= variant.tonnage || "—" %></td>
+  <td class="px-4 py-3 text-sm text-hud-text-dim"><%= variant.role || "—" %></td>
+  <td class="px-4 py-3 text-sm text-hud-text-dim"><%= variant.technology || "—" %></td>
+  <td class="px-4 py-3 text-sm text-hud-text-dim"><%= variant.era_name || "—" %></td>
+  <td class="px-4 py-3 text-sm text-hud-text-dim text-right" data-sort-value="<%= variant.date_introduced || 0 %>"><%= variant.date_introduced || "—" %></td>
+  <td class="px-4 py-3 text-sm text-hud-text-dim"><%= variant.rules_level || "—" %></td>
 </tr>
-<tr class="hidden bg-gray-50" data-variant-expand-target="details">
+<tr class="hidden bg-hud-bg" data-variant-expand-target="details">
   <td colspan="11" class="px-4 py-4">
     <div class="flex gap-6">
       <!-- Card Image -->
       <div class="flex-shrink-0">
         <% if card&.image&.attached? %>
-          <%= image_tag card.image, class: "rounded border border-gray-200", style: "max-width: 400px;",
+          <%= image_tag card.image, class: "rounded border border-hud-border", style: "max-width: 400px;",
               alt: "Card for #{variant.name}" %>
         <% else %>
-          <div class="bg-gray-200 rounded flex items-center justify-center text-gray-400 text-sm" style="width: 400px; height: 280px;">
+          <div class="bg-hud-bg border border-hud-border rounded flex items-center justify-center text-hud-text-muted text-sm" style="width: 400px; height: 280px;">
             No card
           </div>
         <% end %>
@@ -35,40 +35,40 @@
 
       <!-- Alpha Strike Stats -->
       <div class="flex-1">
-        <h4 class="font-semibold text-gray-800 mb-3">Alpha Strike Stats</h4>
+        <h4 class="font-semibold text-hud-green mb-3">Alpha Strike Stats</h4>
         <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
           <div>
-            <span class="text-gray-500">Move:</span>
-            <span class="font-medium"><%= variant.bf_move || "—" %></span>
+            <span class="text-hud-text-muted">Move:</span>
+            <span class="font-medium text-hud-text-dim"><%= variant.bf_move || "—" %></span>
           </div>
           <div>
-            <span class="text-gray-500">Size:</span>
-            <span class="font-medium"><%= variant.bf_size || "—" %></span>
+            <span class="text-hud-text-muted">Size:</span>
+            <span class="font-medium text-hud-text-dim"><%= variant.bf_size || "—" %></span>
           </div>
           <div>
-            <span class="text-gray-500">DMG (S/M/L):</span>
-            <span class="font-medium"><%= variant.bf_damage_short || "—" %> / <%= variant.bf_damage_medium || "—" %> / <%= variant.bf_damage_long || "—" %></span>
+            <span class="text-hud-text-muted">DMG (S/M/L):</span>
+            <span class="font-medium text-hud-text-dim"><%= variant.bf_damage_short || "—" %> / <%= variant.bf_damage_medium || "—" %> / <%= variant.bf_damage_long || "—" %></span>
           </div>
           <div>
-            <span class="text-gray-500">Overheat:</span>
-            <span class="font-medium"><%= variant.bf_overheat || "—" %></span>
+            <span class="text-hud-text-muted">Overheat:</span>
+            <span class="font-medium text-hud-text-dim"><%= variant.bf_overheat || "—" %></span>
           </div>
           <div>
-            <span class="text-gray-500">Armor:</span>
-            <span class="font-medium"><%= variant.bf_armor || "—" %></span>
+            <span class="text-hud-text-muted">Armor:</span>
+            <span class="font-medium text-hud-text-dim"><%= variant.bf_armor || "—" %></span>
           </div>
           <div>
-            <span class="text-gray-500">Structure:</span>
-            <span class="font-medium"><%= variant.bf_structure || "—" %></span>
+            <span class="text-hud-text-muted">Structure:</span>
+            <span class="font-medium text-hud-text-dim"><%= variant.bf_structure || "—" %></span>
           </div>
         </div>
         <% if variant.bf_abilities.present? %>
           <div class="mt-3 text-sm">
-            <span class="text-gray-500">Special:</span>
-            <span class="font-medium"><%= variant.bf_abilities %></span>
+            <span class="text-hud-text-muted">Special:</span>
+            <span class="font-medium text-hud-text-dim"><%= variant.bf_abilities %></span>
           </div>
         <% end %>
-        <div class="mt-3 text-xs text-gray-400">
+        <div class="mt-3 text-xs text-hud-text-muted">
           MUL ID: <%= variant.mul_id %> &middot; Introduced: <%= variant.date_introduced || "?" %>
         </div>
       </div>

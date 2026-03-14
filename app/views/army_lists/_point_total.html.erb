@@ -1,19 +1,37 @@
 <div id="point_total" class="text-right">
   <% total = army_list.total_points %>
   <% cap = event.point_cap %>
-  <% percentage = cap > 0 ? (total.to_f / cap * 100) : 0 %>
-  <span class="text-2xl font-bold
-    <%= if total > cap
-          'text-red-600'
-        elsif percentage >= 80
-          'text-yellow-600'
-        else
-          'text-green-600'
-        end %>">
-    <%= total %>
-  </span>
-  <span class="text-gray-400 text-lg">/ <%= cap %> <%= event.point_value_label %></span>
-  <% if total > cap %>
-    <p class="text-xs text-red-500 mt-1">Przekroczono limit punktów!</p>
+  <% percentage = cap > 0 ? (total.to_f / cap * 100).clamp(0, 100) : 0 %>
+  <% over_cap = total > cap %>
+  <%# Readout text color shifts with percentage %>
+  <% color_class = if over_cap
+                     'text-hud-red'
+                   elsif percentage >= 90
+                     'text-hud-red'
+                   elsif percentage >= 70
+                     'text-hud-amber'
+                   else
+                     'text-hud-green'
+                   end %>
+
+  <div class="flex items-center justify-end gap-3">
+    <div class="text-right">
+      <div class="text-[9px] text-hud-text-muted uppercase tracking-wider">
+        <%= event.point_value_label.upcase %> Capacity
+      </div>
+      <div class="text-xs text-hud-text-dim">
+        <%= total %> / <%= cap %>
+      </div>
+    </div>
+    <div class="hud-gauge-track rounded-sm" style="<%= 'border-color: var(--color-hud-red); box-shadow: 0 0 8px var(--color-hud-red-glow);' if over_cap %>">
+      <div class="hud-gauge-fill" style="width: <%= percentage %>%; background: linear-gradient(90deg, #00ff41 0%, #88ff00 35%, #ffaa00 65%, #ff6622 85%, #ff4444 100%);"></div>
+      <div class="hud-gauge-ticks"></div>
+    </div>
+    <div class="hud-gauge-readout <%= color_class %>" style="<%= 'text-shadow: 0 0 10px var(--color-hud-red-glow);' if over_cap %>">
+      <%= total %>
+    </div>
+  </div>
+  <% if over_cap %>
+    <p class="text-xs text-hud-red mt-1">PRZEKROCZONO LIMIT PUNKTÓW!</p>
   <% end %>
 </div>

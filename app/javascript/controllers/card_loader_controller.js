@@ -15,7 +15,7 @@ export default class extends Controller {
 
   poll() {
     if (this.attempts >= this.maxAttempts) {
-      this.element.innerHTML = '<p class="text-sm text-gray-400">Nie udało się pobrać karty.</p>'
+      this.element.innerHTML = '<p class="text-sm text-hud-text-muted">Nie udało się pobrać karty.</p>'
       return
     }
 
@@ -30,7 +30,7 @@ export default class extends Controller {
             if (container) {
               const img = document.createElement("img")
               img.src = response.url
-              img.className = "w-full rounded border border-gray-200"
+              img.className = "w-full rounded border border-hud-border"
               container.replaceChildren(img)
             }
           } else {

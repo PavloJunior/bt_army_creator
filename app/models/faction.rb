@@ -16,9 +16,16 @@ class Faction < ApplicationRecord
     "clan" => [ 56, 85 ]
   }.freeze
 
+  SIDEBAR_CATEGORY_ORDER = [ "Inner Sphere", "Clan", "Periphery", "Star League", "Other", "General" ].freeze
+
   scope :for_tech_base, ->(tech_base) {
     categories = TECH_BASE_CATEGORIES[tech_base] || []
     extra_ids = TECH_BASE_EXTRA_MUL_IDS[tech_base] || []
     where(category: categories).or(where(mul_id: extra_ids))
   }
+
+  def self.for_sidebar(tech_base)
+    scope = tech_base == "mixed" ? order(:name) : for_tech_base(tech_base).order(:name)
+    scope.group_by(&:category).sort_by { |cat, _| SIDEBAR_CATEGORY_ORDER.index(cat) || 99 }.to_h
+  end
 end

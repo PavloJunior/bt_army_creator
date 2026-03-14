@@ -1,19 +1,26 @@
-<h2 class="text-2xl font-bold text-gray-900 mb-6">Add Chassis</h2>
+<h2 class="text-2xl font-bold text-hud-green font-hud-heading mb-6">Add Chassis</h2>
 
-<div class="max-w-lg bg-white rounded-lg shadow p-6">
+<div class="max-w-lg bg-hud-bg-panel border border-hud-border rounded p-6">
   <%= form_with url: search_admin_chassis_index_path, method: :get, class: "space-y-4" do |form| %>
     <div>
-      <%= form.label :search_term, "Search MUL", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.label :search_term, "Search MUL", class: "block text-sm font-medium text-hud-text-dim mb-1" %>
       <%= form.text_field :search_term, required: true, autofocus: true,
           placeholder: "e.g. Atlas, Timber Wolf, Commando",
-          class: "w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
-      <p class="mt-1 text-sm text-gray-500">Search for a chassis name on masterunitlist.info</p>
+          class: "w-full px-3 py-2 hud-input rounded" %>
+      <p class="mt-1 text-sm text-hud-text-muted">Search for a chassis name on masterunitlist.info</p>
+    </div>
+
+    <div>
+      <%= form.label :miniature_count, "Number of Miniatures", class: "block text-sm font-medium text-hud-text-dim mb-1" %>
+      <%= form.number_field :miniature_count, value: 1, min: 0, max: 99,
+          class: "w-24 px-3 py-2 hud-input hud-number-input rounded" %>
+      <p class="mt-1 text-sm text-hud-text-muted">Optionally create miniatures for this chassis automatically</p>
     </div>
 
     <div class="flex gap-3">
-      <%= form.submit "Search MUL", class: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+      <%= form.submit "Search MUL", class: "px-4 py-2 hud-btn-primary rounded cursor-pointer" %>
       <%= link_to "Cancel", admin_chassis_index_path,
-          class: "px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition" %>
+          class: "px-4 py-2 hud-btn-danger rounded" %>
     </div>
   <% end %>
 </div>

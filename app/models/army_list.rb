@@ -5,12 +5,18 @@ class ArmyList < ApplicationRecord
 
   belongs_to :event
   has_many :army_list_items, dependent: :destroy
+  has_many :army_list_factions, dependent: :destroy
   has_many :miniatures, through: :army_list_items
   has_many :miniature_locks, dependent: :destroy
 
   validates :player_name, presence: true
   validates :status, inclusion: { in: %w[draft submitted] }
   validates :tech_base, presence: true, inclusion: { in: TECH_BASES }
+
+  def selected_faction_mul_ids
+    ids = army_list_factions.pluck(:faction_mul_id)
+    ids.presence
+  end
 
   def tech_base_label
     { "inner_sphere" => "Inner Sphere", "clan" => "Clan", "mixed" => "Mixed" }[tech_base]

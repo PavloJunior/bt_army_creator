@@ -1,17 +1,17 @@
 <div class="mb-6">
   <%= link_to "&larr; Back to chassis list".html_safe, admin_chassis_index_path,
-      class: "text-blue-600 hover:text-blue-800 text-sm" %>
+      class: "text-hud-green hover:text-hud-green-dim text-sm" %>
 </div>
 
 <!-- Header -->
 <div class="flex justify-between items-start mb-6">
   <div>
-    <h1 class="text-2xl font-bold text-gray-900"><%= @chassis.name %></h1>
-    <p class="text-gray-500 mt-1">
+    <h1 class="text-2xl font-bold text-hud-green font-hud-heading"><%= @chassis.name %></h1>
+    <p class="text-hud-text-muted mt-1">
       <%= @chassis.unit_type || "Unknown type" %> &middot; <%= @chassis.tonnage || "?" %>t
       &middot; <%= @variants.size %> variants &middot; <%= @miniatures.size %> miniatures
     </p>
-    <p class="text-xs text-gray-400 mt-1">
+    <p class="text-xs text-hud-text-muted mt-1">
       Last sync:
       <% if @chassis.mul_synced_at %>
         <%= time_ago_in_words(@chassis.mul_synced_at) %> ago
@@ -23,78 +23,78 @@
   <div class="flex items-center gap-2">
     <%= button_to "Sync with MUL", sync_variants_admin_chassis_path(@chassis),
         method: :post,
-        class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition" %>
+        class: "px-4 py-2 hud-btn-primary rounded text-sm" %>
     <%= link_to "Edit", edit_admin_chassis_path(@chassis),
-        class: "px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition" %>
+        class: "px-4 py-2 hud-btn-amber rounded text-sm" %>
   </div>
 </div>
 
 <!-- Miniatures Section -->
-<div class="bg-white rounded-lg shadow mb-6">
-  <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-    <h2 class="text-lg font-semibold text-gray-800">Miniatures</h2>
+<div class="bg-hud-bg-panel border border-hud-border rounded mb-6">
+  <div class="px-6 py-4 border-b border-hud-border flex justify-between items-center">
+    <h2 class="text-lg font-semibold text-hud-green">Miniatures</h2>
     <div class="flex gap-4">
       <%= link_to "Add Miniature", new_admin_chassis_miniature_path(@chassis),
-          class: "text-sm text-green-600 hover:text-green-800 font-medium" %>
+          class: "text-sm text-hud-green hover:text-hud-green-dim font-medium" %>
       <%= link_to "Bulk Add", bulk_new_admin_chassis_miniatures_path(@chassis),
-          class: "text-sm text-blue-600 hover:text-blue-800 font-medium" %>
+          class: "text-sm text-hud-amber hover:text-hud-amber-dim font-medium" %>
     </div>
   </div>
   <% if @miniatures.any? %>
     <div class="px-6 py-4 flex flex-wrap gap-2">
       <% @miniatures.each do |mini| %>
-        <span class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700">
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-hud-green/10 border border-hud-border text-sm text-hud-text-dim rounded-full">
           <%= mini.display_name %>
           <%= link_to "edit", edit_admin_chassis_miniature_path(@chassis, mini),
-              class: "text-xs text-indigo-500 hover:text-indigo-700" %>
+              class: "text-xs text-hud-amber hover:text-hud-amber-dim" %>
         </span>
       <% end %>
     </div>
   <% else %>
-    <div class="px-6 py-4 text-sm text-gray-400">No miniatures. Add the first one.</div>
+    <div class="px-6 py-4 text-sm text-hud-text-muted">No miniatures. Add the first one.</div>
   <% end %>
 </div>
 
 <!-- Variants Table -->
-<div class="bg-white rounded-lg shadow overflow-hidden">
-  <div class="px-6 py-4 border-b border-gray-200">
-    <h2 class="text-lg font-semibold text-gray-800">Variants (<%= @variants.size %>)</h2>
+<div class="bg-hud-bg-panel border border-hud-border rounded overflow-hidden">
+  <div class="px-6 py-4 border-b border-hud-border">
+    <h2 class="text-lg font-semibold text-hud-green">Variants (<%= @variants.size %>)</h2>
   </div>
   <% if @variants.any? %>
-    <table class="min-w-full divide-y divide-gray-200" data-controller="table-sort">
-      <thead class="bg-gray-50">
+    <table class="min-w-full divide-y divide-hud-border" data-controller="table-sort">
+      <thead class="bg-hud-bg">
         <tr>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-8"></th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
+          <th class="px-4 py-3 text-left text-xs font-medium text-hud-text-muted uppercase w-8"></th>
+          <th class="px-4 py-3 text-left text-xs font-medium text-hud-text-muted uppercase cursor-pointer hover:text-hud-green select-none"
               data-table-sort-target="header" data-sort-col="1" data-sort-type="string" data-action="click->table-sort#sort">Name</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
+          <th class="px-4 py-3 text-left text-xs font-medium text-hud-text-muted uppercase cursor-pointer hover:text-hud-green select-none"
               data-table-sort-target="header" data-sort-col="2" data-sort-type="string" data-action="click->table-sort#sort">Code</th>
-          <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
+          <th class="px-4 py-3 text-right text-xs font-medium text-hud-text-muted uppercase cursor-pointer hover:text-hud-green select-none"
               data-table-sort-target="header" data-sort-col="3" data-sort-type="number" data-action="click->table-sort#sort">PV</th>
-          <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
+          <th class="px-4 py-3 text-right text-xs font-medium text-hud-text-muted uppercase cursor-pointer hover:text-hud-green select-none"
               data-table-sort-target="header" data-sort-col="4" data-sort-type="number" data-action="click->table-sort#sort">BV</th>
-          <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
+          <th class="px-4 py-3 text-right text-xs font-medium text-hud-text-muted uppercase cursor-pointer hover:text-hud-green select-none"
               data-table-sort-target="header" data-sort-col="5" data-sort-type="number" data-action="click->table-sort#sort">Tonnage</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
+          <th class="px-4 py-3 text-left text-xs font-medium text-hud-text-muted uppercase cursor-pointer hover:text-hud-green select-none"
               data-table-sort-target="header" data-sort-col="6" data-sort-type="string" data-action="click->table-sort#sort">Role</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
+          <th class="px-4 py-3 text-left text-xs font-medium text-hud-text-muted uppercase cursor-pointer hover:text-hud-green select-none"
               data-table-sort-target="header" data-sort-col="7" data-sort-type="string" data-action="click->table-sort#sort">Technology</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
+          <th class="px-4 py-3 text-left text-xs font-medium text-hud-text-muted uppercase cursor-pointer hover:text-hud-green select-none"
               data-table-sort-target="header" data-sort-col="8" data-sort-type="string" data-action="click->table-sort#sort">Era</th>
-          <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
+          <th class="px-4 py-3 text-right text-xs font-medium text-hud-text-muted uppercase cursor-pointer hover:text-hud-green select-none"
               data-table-sort-target="header" data-sort-col="9" data-sort-type="number" data-action="click->table-sort#sort">Intro</th>
-          <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:text-gray-700 select-none"
+          <th class="px-4 py-3 text-left text-xs font-medium text-hud-text-muted uppercase cursor-pointer hover:text-hud-green select-none"
               data-table-sort-target="header" data-sort-col="10" data-sort-type="string" data-action="click->table-sort#sort">Rules</th>
         </tr>
       </thead>
       <% @variants.each do |variant| %>
-        <tbody class="divide-y divide-gray-200" data-controller="variant-expand">
+        <tbody class="divide-y divide-hud-border" data-controller="variant-expand">
           <%= render partial: "admin/chassis/variant_row", locals: { variant: variant } %>
         </tbody>
       <% end %>
     </table>
   <% else %>
-    <div class="px-6 py-8 text-center text-gray-400">
+    <div class="px-6 py-8 text-center text-hud-text-muted">
       <p>No variants. Click "Sync with MUL" to fetch data.</p>
     </div>
   <% end %>

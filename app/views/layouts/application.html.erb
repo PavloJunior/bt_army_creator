@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "BT Army Creator" %></title>
+    <title><%= content_for(:title) || "BT ARMY CREATOR" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -13,35 +13,57 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-gray-50 min-h-screen">
-    <header class="bg-gray-900 text-white">
-      <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-        <%= link_to root_path, class: "text-xl font-bold hover:text-gray-300 transition" do %>
-          BT Army Creator
+  <body class="bg-hud-bg min-h-screen font-hud-mono text-hud-text flex flex-col">
+    <div class="hud-scanlines" aria-hidden="true"></div>
+    <div class="hud-grid" aria-hidden="true"></div>
+
+    <header class="bg-hud-bg-panel border-b border-hud-border-bright sticky top-0 z-50">
+      <div class="max-w-6xl mx-auto px-6 py-3 flex justify-between items-center">
+        <%= link_to root_path, class: "flex items-center gap-2 no-underline" do %>
+          <span class="text-hud-amber text-lg">◆</span>
+          <span class="font-hud-heading text-xl font-bold tracking-wider uppercase text-hud-green hud-glow">
+            BT Army Creator
+          </span>
         <% end %>
-        <% if authenticated? %>
-          <div class="flex items-center gap-4">
-            <%= link_to "Admin", admin_root_path, class: "text-gray-300 hover:text-white text-sm" %>
-            <%= button_to "Wyloguj się", admin_session_path, method: :delete,
-                class: "text-gray-400 hover:text-white text-sm" %>
-          </div>
-        <% end %>
+        <nav class="flex items-center gap-6 text-sm uppercase tracking-wider">
+          <%= link_to "Wydarzenia", events_path,
+              class: "no-underline transition #{request.path == events_path || request.path == root_path ? 'text-hud-green hud-glow' : 'text-hud-text-dim hover:text-hud-green'}" %>
+          <% if authenticated? %>
+            <%= link_to "Admin", admin_root_path,
+                class: "text-hud-amber-dim hover:text-hud-amber no-underline transition" %>
+            <%= button_to "Wyloguj", admin_session_path, method: :delete,
+                class: "text-hud-text-muted hover:text-hud-red text-sm uppercase tracking-wider cursor-pointer bg-transparent" %>
+          <% end %>
+        </nav>
       </div>
     </header>
 
-    <main class="container mx-auto px-6 py-8">
+    <main class="flex-1 max-w-6xl mx-auto px-6 py-8 w-full relative z-10">
       <% if flash[:notice] %>
-        <div class="mb-6 p-4 bg-green-100 border border-green-300 text-green-800 rounded-lg">
-          <%= flash[:notice] %>
+        <div class="mb-6 p-4 bg-hud-bg-panel border border-hud-green text-hud-green rounded text-sm hud-panel">
+          <span class="text-hud-text-muted uppercase text-xs tracking-wider">System</span>
+          <p class="mt-1"><%= flash[:notice] %></p>
         </div>
       <% end %>
       <% if flash[:alert] %>
-        <div class="mb-6 p-4 bg-red-100 border border-red-300 text-red-800 rounded-lg">
-          <%= flash[:alert] %>
+        <div class="mb-6 p-4 bg-hud-bg-panel border border-hud-red text-hud-red rounded text-sm">
+          <span class="text-hud-amber uppercase text-xs tracking-wider">Uwaga</span>
+          <p class="mt-1"><%= flash[:alert] %></p>
         </div>
       <% end %>
 
       <%= yield %>
     </main>
+
+    <div class="hud-bg-mech" aria-hidden="true"></div>
+    <div class="hud-bg-crosshair" aria-hidden="true"></div>
+
+    <footer class="bg-hud-bg-panel border-t border-hud-border-bright text-xs text-hud-text-muted relative z-10">
+      <div class="max-w-6xl mx-auto px-6 py-2 flex justify-between items-center">
+        <span><span class="text-hud-green-dim">SYS:ONLINE</span> · BT Army Creator</span>
+        <span><%= content_for(:status_context) || "OCZEKIWANIE" %></span>
+        <span><%= Time.current.strftime("%Y.%m.%d // %H:%M") %> TTC</span>
+      </div>
+    </footer>
   </body>
 </html>

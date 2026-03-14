@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" fill="#00ff41" opacity="0.5">
+  <!-- Stylized BattleMech silhouette (Atlas-inspired) -->
+  <!-- Head -->
+  <rect x="85" y="20" width="30" height="20" rx="3"/>
+  <!-- Cockpit visor -->
+  <rect x="90" y="25" width="20" height="8" rx="2" opacity="0.8"/>
+  <!-- Neck -->
+  <rect x="92" y="40" width="16" height="10"/>
+  <!-- Torso -->
+  <path d="M70 50 L130 50 L140 70 L140 120 L130 140 L70 140 L60 120 L60 70 Z"/>
+  <!-- Center torso detail -->
+  <rect x="88" y="60" width="24" height="30" rx="2" opacity="0.6"/>
+  <!-- Shoulder joints -->
+  <circle cx="55" cy="60" r="10"/>
+  <circle cx="145" cy="60" r="10"/>
+  <!-- Left arm -->
+  <rect x="35" y="55" width="15" height="50" rx="3"/>
+  <rect x="38" y="105" width="10" height="35" rx="2"/>
+  <!-- Left weapon (AC/20 barrel) -->
+  <rect x="40" y="140" width="6" height="25" rx="1"/>
+  <!-- Right arm -->
+  <rect x="150" y="55" width="15" height="50" rx="3"/>
+  <rect x="152" y="105" width="10" height="35" rx="2"/>
+  <!-- Right weapon -->
+  <rect x="154" y="140" width="6" height="25" rx="1"/>
+  <!-- Waist -->
+  <rect x="80" y="140" width="40" height="15" rx="2"/>
+  <!-- Hip joints -->
+  <circle cx="85" cy="160" r="8"/>
+  <circle cx="115" cy="160" r="8"/>
+  <!-- Left leg upper -->
+  <rect x="75" y="163" width="18" height="45" rx="3"/>
+  <!-- Left leg lower -->
+  <rect x="77" y="210" width="14" height="45" rx="3"/>
+  <!-- Left foot -->
+  <path d="M72 255 L72 270 L98 270 L98 260 L92 255 Z"/>
+  <!-- Right leg upper -->
+  <rect x="107" y="163" width="18" height="45" rx="3"/>
+  <!-- Right leg lower -->
+  <rect x="109" y="210" width="14" height="45" rx="3"/>
+  <!-- Right foot -->
+  <path d="M128 255 L128 270 L102 270 L102 260 L108 255 Z"/>
+</svg>

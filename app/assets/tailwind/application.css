@@ -1,1 +1,510 @@
 @import "tailwindcss";
+
+@theme {
+  --color-hud-green: #00ff41;
+  --color-hud-green-dim: #00cc33;
+  --color-hud-green-dark: #004d14;
+  --color-hud-green-glow: rgba(0, 255, 65, 0.2);
+  --color-hud-amber: #ffaa00;
+  --color-hud-amber-dim: #cc8800;
+  --color-hud-amber-glow: rgba(255, 170, 0, 0.2);
+  --color-hud-red: #ff4444;
+  --color-hud-red-dim: #cc3333;
+  --color-hud-red-glow: rgba(255, 68, 68, 0.2);
+  --color-hud-bg: #080e08;
+  --color-hud-bg-panel: #0a140a;
+  --color-hud-bg-panel-hover: #0f1f0f;
+  --color-hud-bg-input: #061006;
+  --color-hud-border: rgba(0, 255, 65, 0.2);
+  --color-hud-border-bright: rgba(0, 255, 65, 0.4);
+  --color-hud-text: #00ff41;
+  --color-hud-text-dim: rgba(0, 204, 51, 0.67);
+  --color-hud-text-muted: rgba(0, 255, 65, 0.4);
+
+  --font-hud-mono: 'Space Mono', ui-monospace, monospace;
+  --font-hud-heading: 'Rajdhani', ui-sans-serif, sans-serif;
+}
+
+/* === HUD Effect Overlays === */
+
+.hud-scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+}
+
+.hud-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9997;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 49px,
+      rgba(0, 255, 65, 0.02) 49px,
+      rgba(0, 255, 65, 0.02) 50px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 49px,
+      rgba(0, 255, 65, 0.02) 49px,
+      rgba(0, 255, 65, 0.02) 50px
+    );
+}
+
+/* === Corner Bracket Accent Panel === */
+
+.hud-panel {
+  position: relative;
+}
+.hud-panel::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 12px;
+  height: 12px;
+  border-top: 2px solid var(--color-hud-green);
+  border-left: 2px solid var(--color-hud-green);
+  pointer-events: none;
+  z-index: 1;
+}
+.hud-panel::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 12px;
+  height: 12px;
+  border-bottom: 2px solid var(--color-hud-green);
+  border-right: 2px solid var(--color-hud-green);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hud-panel-amber::before {
+  border-color: var(--color-hud-amber);
+}
+.hud-panel-amber::after {
+  border-color: var(--color-hud-amber);
+}
+
+/* === Accent Bars (left border highlights) === */
+
+.hud-accent-green {
+  border-left: 3px solid var(--color-hud-green);
+}
+.hud-accent-amber {
+  border-left: 3px solid var(--color-hud-amber);
+}
+.hud-accent-red {
+  border-left: 3px solid var(--color-hud-red);
+}
+
+/* === Form Inputs === */
+
+.hud-input {
+  background-color: var(--color-hud-bg-input);
+  border: 1px solid var(--color-hud-border);
+  color: var(--color-hud-green);
+  font-family: var(--font-hud-mono);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.hud-input:focus {
+  border-color: var(--color-hud-green);
+  box-shadow: 0 0 8px var(--color-hud-green-glow);
+  outline: none;
+}
+.hud-input::placeholder {
+  color: var(--color-hud-text-muted);
+}
+
+.hud-select {
+  background-color: var(--color-hud-bg-input);
+  border: 1px solid var(--color-hud-border);
+  color: var(--color-hud-green);
+  font-family: var(--font-hud-mono);
+  appearance: none;
+}
+.hud-select option {
+  background-color: var(--color-hud-bg);
+  color: var(--color-hud-green);
+}
+
+/* === Buttons === */
+
+.hud-btn-primary {
+  background-color: rgba(0, 255, 65, 0.1);
+  border: 1px solid var(--color-hud-green);
+  color: var(--color-hud-green);
+  font-family: var(--font-hud-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+.hud-btn-primary:hover {
+  background-color: rgba(0, 255, 65, 0.2);
+  box-shadow: 0 0 12px var(--color-hud-green-glow);
+}
+
+.hud-btn-danger {
+  background-color: transparent;
+  border: 1px solid var(--color-hud-red-dim);
+  color: var(--color-hud-red);
+  font-family: var(--font-hud-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.hud-btn-danger:hover {
+  background-color: rgba(255, 68, 68, 0.15);
+  border-color: var(--color-hud-red);
+}
+
+.hud-btn-amber {
+  background-color: rgba(255, 170, 0, 0.1);
+  border: 1px solid var(--color-hud-amber);
+  color: var(--color-hud-amber);
+  font-family: var(--font-hud-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+.hud-btn-amber:hover {
+  background-color: rgba(255, 170, 0, 0.2);
+  box-shadow: 0 0 12px var(--color-hud-amber-glow);
+}
+
+/* === Number Input Spinner === */
+
+.hud-number-input {
+  color-scheme: dark;
+}
+
+.hud-number-input::-webkit-inner-spin-button,
+.hud-number-input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/* === Checkbox === */
+
+.hud-checkbox {
+  accent-color: var(--color-hud-green);
+  background-color: var(--color-hud-bg-input);
+  border-color: var(--color-hud-border);
+}
+
+/* === Glow Effect === */
+
+.hud-glow {
+  text-shadow: 0 0 10px var(--color-hud-green-glow);
+}
+
+/* === Points Progress Bar === */
+
+.hud-points-bar {
+  height: 4px;
+  background: var(--color-hud-bg-panel);
+  border: 1px solid var(--color-hud-border);
+  overflow: hidden;
+}
+.hud-points-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* === Tab Buttons === */
+
+.hud-tab {
+  padding: 0.625rem 1.5rem;
+  border: 1px solid var(--color-hud-border);
+  border-bottom: none;
+  color: var(--color-hud-text-muted);
+  font-family: var(--font-hud-mono);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  background: transparent;
+  transition: color 0.2s, background-color 0.2s;
+}
+.hud-tab.active {
+  color: var(--color-hud-green);
+  background: var(--color-hud-bg-panel);
+  border-color: var(--color-hud-border-bright);
+}
+.hud-tab:hover:not(.active) {
+  color: var(--color-hud-green-dim);
+  background: rgba(0, 255, 65, 0.03);
+}
+
+/* === HUD Scrollbar (global) === */
+
+*,
+*::before,
+*::after {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-hud-green-dark) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-hud-green-dark);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-hud-green-dim);
+}
+
+/* === Decorative Background === */
+
+.hud-bg-mech {
+  position: fixed;
+  bottom: 40px;
+  right: -20px;
+  width: 300px;
+  height: 400px;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 0;
+  background: url('/images/hud/mech-silhouette.svg') no-repeat center;
+  background-size: contain;
+}
+
+.hud-bg-crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 500px;
+  opacity: 0.015;
+  pointer-events: none;
+  z-index: 0;
+  background: url('/images/hud/crosshair.svg') no-repeat center;
+  background-size: contain;
+}
+
+/* === Hazard Stripes === */
+
+.hud-hazard-stripe {
+  height: 5px;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 255, 65, 0.35),
+    rgba(0, 255, 65, 0.35) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+.hud-hazard-stripe-amber {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 170, 0, 0.35),
+    rgba(255, 170, 0, 0.35) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+.hud-hazard-stripe-red {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 68, 68, 0.35),
+    rgba(255, 68, 68, 0.35) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+/* === Corner Rivets === */
+
+.hud-riveted {
+  position: relative;
+}
+.hud-riveted::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(0, 255, 65, 0.25);
+  pointer-events: none;
+  z-index: 1;
+  box-shadow:
+    calc(100% - 18px) 0 0 0 rgba(0, 255, 65, 0.25),
+    0 calc(100% - 18px) 0 0 rgba(0, 255, 65, 0.25),
+    calc(100% - 18px) calc(100% - 18px) 0 0 rgba(0, 255, 65, 0.25);
+}
+
+/* === Blueprint Grid === */
+
+.hud-blueprint-grid {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 24px,
+      rgba(0, 255, 65, 0.04) 24px,
+      rgba(0, 255, 65, 0.04) 25px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 24px,
+      rgba(0, 255, 65, 0.04) 24px,
+      rgba(0, 255, 65, 0.04) 25px
+    );
+}
+
+/* === Dashed Dividers === */
+
+.hud-dashed-divider {
+  border-bottom: 1px dashed rgba(0, 255, 65, 0.15);
+}
+.hud-dashed-divider-list > * + * {
+  border-top: 1px dashed rgba(0, 255, 65, 0.15);
+}
+
+/* === Mech Watermark Accent === */
+
+.hud-watermark-mech {
+  position: relative;
+  overflow: hidden;
+  background-image: url('/images/hud/mech-silhouette.svg');
+  background-repeat: no-repeat;
+  background-position: bottom 8px right 8px;
+  background-size: 60px 80px;
+}
+
+/* === Gauge Meter === */
+
+.hud-gauge-track {
+  width: 200px;
+  height: 14px;
+  background: rgba(0, 255, 65, 0.05);
+  border: 1px solid var(--color-hud-border);
+  position: relative;
+  overflow: hidden;
+}
+.hud-gauge-fill {
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+.hud-gauge-ticks {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 9%,
+    rgba(0, 0, 0, 0.3) 9%,
+    rgba(0, 0, 0, 0.3) 10%
+  );
+  pointer-events: none;
+}
+.hud-gauge-readout {
+  font-family: var(--font-hud-heading);
+  font-weight: 700;
+  font-size: 1.75rem;
+  line-height: 1;
+  text-shadow: 0 0 10px var(--color-hud-green-glow);
+}
+
+/* === Stamped Status Labels === */
+
+.hud-stamp {
+  display: inline-block;
+  padding: 0.25em 0.75em;
+  border: 1px solid currentColor;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-family: var(--font-hud-heading);
+  font-weight: 600;
+  font-size: 0.75rem;
+  transform: rotate(-1.5deg);
+}
+.hud-stamp-green {
+  color: var(--color-hud-green);
+  border-color: var(--color-hud-green);
+  background: rgba(0, 255, 65, 0.08);
+}
+.hud-stamp-amber {
+  color: var(--color-hud-amber);
+  border-color: var(--color-hud-amber);
+  background: rgba(255, 170, 0, 0.08);
+}
+.hud-stamp-red {
+  color: var(--color-hud-red);
+  border-color: var(--color-hud-red);
+  background: rgba(255, 68, 68, 0.08);
+}
+.hud-stamp-muted {
+  color: var(--color-hud-text-muted);
+  border-color: rgba(0, 255, 65, 0.2);
+  background: rgba(0, 255, 65, 0.03);
+}
+
+/* === Dimension Lines === */
+
+.hud-dim-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.hud-dim-label {
+  font-size: 9px;
+  color: var(--color-hud-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.hud-dim-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(0, 255, 65, 0.2);
+  position: relative;
+  min-width: 12px;
+}
+.hud-dim-line::before,
+.hud-dim-line::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  width: 1px;
+  height: 9px;
+  background: rgba(0, 255, 65, 0.2);
+}
+.hud-dim-line::before {
+  left: 0;
+}
+.hud-dim-line::after {
+  right: 0;
+}
+.hud-dim-value {
+  font-family: var(--font-hud-heading);
+  font-weight: 600;
+  color: var(--color-hud-text-dim);
+  white-space: nowrap;
+}

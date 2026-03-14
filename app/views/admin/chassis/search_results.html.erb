@@ -1,21 +1,21 @@
 <div class="flex justify-between items-center mb-6">
-  <h2 class="text-2xl font-bold text-gray-900">Search Results for "<%= @search_term %>"</h2>
+  <h2 class="text-2xl font-bold text-hud-green font-hud-heading">Search Results for "<%= @search_term %>"</h2>
   <%= link_to "New Search", new_admin_chassis_path,
-      class: "px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition" %>
+      class: "px-4 py-2 hud-btn-danger rounded" %>
 </div>
 
 <div class="grid gap-4">
   <% @chassis_groups.each do |group| %>
-    <div class="bg-white rounded-lg shadow p-4 flex items-center justify-between">
+    <div class="bg-hud-bg-panel border border-hud-border rounded p-4 flex items-center justify-between">
       <div class="flex items-center gap-4">
         <% if group[:image_url].present? %>
           <img src="<%= group[:image_url] %>" alt="<%= group[:name] %>" class="w-16 h-16 object-contain">
         <% else %>
-          <div class="w-16 h-16 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">No image</div>
+          <div class="w-16 h-16 bg-hud-bg border border-hud-border rounded flex items-center justify-center text-hud-text-muted text-xs">No image</div>
         <% end %>
         <div>
-          <p class="font-bold text-gray-900"><%= group[:name] %></p>
-          <p class="text-sm text-gray-500">
+          <p class="font-bold text-hud-green"><%= group[:name] %></p>
+          <p class="text-sm text-hud-text-muted">
             <%= [group[:unit_type], group[:tonnage] ? "#{group[:tonnage]}t" : nil].compact.join(" · ") %>
             · <%= pluralize(group[:variant_count], "variant") %>
           </p>
@@ -24,13 +24,15 @@
 
       <div>
         <% if @existing_names.include?(group[:name]) %>
-          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-hud-bg border border-hud-border text-hud-text-muted">
             Already added
           </span>
         <% else %>
-          <%= form_with url: admin_chassis_index_path, method: :post, class: "inline" do |f| %>
+          <%= form_with url: admin_chassis_index_path, method: :post, class: "inline flex items-center gap-2" do |f| %>
             <%= f.hidden_field :chassis, value: group[:name], name: "chassis[name]" %>
-            <%= f.submit "Add", class: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+            <%= f.number_field :miniature_count, value: params[:miniature_count] || 1, min: 0, max: 99,
+                class: "w-16 px-2 py-2 hud-input hud-number-input rounded text-center", title: "Number of miniatures" %>
+            <%= f.submit "Add", class: "px-4 py-2 hud-btn-primary rounded cursor-pointer" %>
           <% end %>
         <% end %>
       </div>

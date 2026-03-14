@@ -1,18 +1,18 @@
-<h2 class="text-2xl font-bold text-gray-900 mb-6">Dashboard</h2>
+<h2 class="text-2xl font-bold text-hud-green font-hud-heading mb-6">Dashboard</h2>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-  <div class="bg-white rounded-lg shadow p-6">
-    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Chassis</h3>
-    <p class="mt-2 text-3xl font-bold text-gray-900"><%= Chassis.count rescue 0 %></p>
+  <div class="bg-hud-bg-panel border border-hud-border rounded p-6 hud-panel">
+    <h3 class="text-sm font-medium text-hud-text-muted uppercase tracking-wider">Chassis</h3>
+    <p class="mt-2 text-3xl font-bold text-hud-green font-hud-heading"><%= Chassis.count rescue 0 %></p>
   </div>
 
-  <div class="bg-white rounded-lg shadow p-6">
-    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Miniatures</h3>
-    <p class="mt-2 text-3xl font-bold text-gray-900"><%= Miniature.count rescue 0 %></p>
+  <div class="bg-hud-bg-panel border border-hud-border rounded p-6 hud-panel">
+    <h3 class="text-sm font-medium text-hud-text-muted uppercase tracking-wider">Miniatures</h3>
+    <p class="mt-2 text-3xl font-bold text-hud-green font-hud-heading"><%= Miniature.count rescue 0 %></p>
   </div>
 
-  <div class="bg-white rounded-lg shadow p-6">
-    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Upcoming Events</h3>
-    <p class="mt-2 text-3xl font-bold text-gray-900"><%= Event.upcoming.count rescue 0 %></p>
+  <div class="bg-hud-bg-panel border border-hud-border rounded p-6 hud-panel">
+    <h3 class="text-sm font-medium text-hud-text-muted uppercase tracking-wider">Upcoming Events</h3>
+    <p class="mt-2 text-3xl font-bold text-hud-green font-hud-heading"><%= Event.upcoming.count rescue 0 %></p>
   </div>
 </div>

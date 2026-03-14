@@ -11,3 +11,19 @@
     variants: @variants, event: @event, army_list: @army_list
   } %>
 <% end %>
+
+<%= turbo_stream.update "army_item_count", @army_list.army_list_items.size.to_s %>
+
+<%= turbo_stream.replace "army_list_actions" do %>
+  <%= render partial: "army_lists/actions",
+      locals: { army_list: @army_list, event: @event, is_owner: true } %>
+<% end %>
+
+<% if @army_list.army_list_items.reload.empty? %>
+  <%= turbo_stream.append "army_list_items" do %>
+    <div id="army_list_empty_state"
+         class="bg-hud-bg-panel border border-hud-border rounded p-6 text-center text-hud-text-muted">
+      <p>Brak jednostek. Przełącz na zakładkę "Dostępne Jednostki" aby dodać modele.</p>
+    </div>
+  <% end %>
+<% end %>

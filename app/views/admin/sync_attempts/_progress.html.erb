@@ -2,14 +2,14 @@
   <div class="flex items-center gap-3">
     <% case sync_attempt.status %>
     <% when "running" %>
-      <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 animate-pulse">Syncing</span>
-      <span class="text-sm text-gray-600"><%= sync_attempt.progress_text %></span>
+      <span class="px-3 py-1 rounded-full text-xs font-medium bg-hud-amber/10 text-hud-amber border border-hud-amber/30 animate-pulse">Syncing</span>
+      <span class="text-sm text-hud-text-dim"><%= sync_attempt.progress_text %></span>
     <% when "completed" %>
-      <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Completed</span>
-      <span class="text-sm text-gray-500"><%= time_ago_in_words(sync_attempt.completed_at) %> ago</span>
+      <span class="px-3 py-1 rounded-full text-xs font-medium bg-hud-green/10 text-hud-green border border-hud-green/30">Completed</span>
+      <span class="text-sm text-hud-text-muted"><%= time_ago_in_words(sync_attempt.completed_at) %> ago</span>
     <% when "failed" %>
-      <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Failed</span>
-      <span class="text-sm text-gray-500"><%= time_ago_in_words(sync_attempt.completed_at) %> ago</span>
+      <span class="px-3 py-1 rounded-full text-xs font-medium bg-hud-red/10 text-hud-red border border-hud-red/30">Failed</span>
+      <span class="text-sm text-hud-text-muted"><%= time_ago_in_words(sync_attempt.completed_at) %> ago</span>
     <% end %>
   </div>
 <% end %>

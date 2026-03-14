@@ -1,35 +1,38 @@
+<% content_for(:status_context) { "SZCZEGÓŁY WYDARZENIA // #{@event.name.upcase}" } %>
+
 <div class="max-w-4xl mx-auto">
-  <div class="bg-white rounded-lg shadow p-6 mb-6">
+  <div class="bg-hud-bg-panel border border-hud-border rounded p-6 mb-6 hud-panel hud-blueprint-grid">
     <div class="flex justify-between items-start">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900"><%= @event.name %></h1>
-        <p class="text-gray-500 mt-1">
+        <h1 class="font-hud-heading text-2xl font-bold text-hud-green hud-glow uppercase">
+          <%= @event.name %>
+        </h1>
+        <p class="text-hud-text-dim mt-1 text-sm">
           <%= I18n.l(@event.date, format: :long) %> &middot;
           <%= @event.game_system_label %> &middot;
           limit <%= @event.point_cap %> <%= @event.point_value_label %>
         </p>
       </div>
-      <span class="px-3 py-1 rounded-full text-xs font-medium
-        <%= case @event.status
-            when 'upcoming' then 'bg-blue-100 text-blue-800'
-            when 'active' then 'bg-green-100 text-green-800'
-            when 'completed' then 'bg-gray-100 text-gray-800'
+      <span class="hud-stamp <%= case @event.status
+            when 'upcoming' then 'hud-stamp-amber'
+            when 'active' then 'hud-stamp-green'
+            when 'completed' then 'hud-stamp-muted'
             end %>">
         <%= { "upcoming" => "Nadchodzące", "active" => "Aktywne", "completed" => "Zakończone" }[@event.status] %>
       </span>
     </div>
 
     <% if @event.event_era_restrictions.any? || @event.event_faction_restrictions.any? %>
-      <div class="mt-4 pt-4 border-t border-gray-200">
+      <div class="mt-4 pt-4" style="border-top: 1px dashed rgba(0, 255, 65, 0.15);">
         <% if @event.event_era_restrictions.any? %>
-          <p class="text-sm text-gray-600">
-            <span class="font-medium">Ery:</span>
+          <p class="text-sm text-hud-text-dim">
+            <span class="text-hud-text-muted uppercase text-xs tracking-wider">Ery:</span>
             <%= @event.event_era_restrictions.map(&:era_name).join(", ") %>
           </p>
         <% end %>
         <% if @event.event_faction_restrictions.any? %>
-          <p class="text-sm text-gray-600 mt-1">
-            <span class="font-medium">Frakcje:</span>
+          <p class="text-sm text-hud-text-dim mt-1">
+            <span class="text-hud-text-muted uppercase text-xs tracking-wider">Frakcje:</span>
             <%= @event.event_faction_restrictions.map(&:faction_name).join(", ") %>
           </p>
         <% end %>
@@ -37,34 +40,38 @@
     <% end %>
 
     <% if @event.notes.present? %>
-      <div class="mt-4 pt-4 border-t border-gray-200">
-        <p class="text-sm text-gray-700 whitespace-pre-wrap"><%= @event.notes %></p>
+      <div class="mt-4 pt-4" style="border-top: 1px dashed rgba(0, 255, 65, 0.15);">
+        <p class="text-sm text-hud-text-dim whitespace-pre-wrap"><%= @event.notes %></p>
       </div>
     <% end %>
   </div>
 
   <% if @event.status != "completed" %>
     <div class="mb-6">
-      <%= link_to "Utwórz listę armijną", new_event_army_list_path(@event),
-          class: "inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition" %>
+      <%= link_to new_event_army_list_path(@event),
+          class: "inline-block hud-btn-primary px-6 py-3 rounded text-sm no-underline" do %>
+        + UTWÓRZ LISTĘ ARMIJNĄ
+      <% end %>
     </div>
   <% end %>
 
   <% if @submitted_lists.any? %>
-    <h2 class="text-xl font-semibold text-gray-800 mb-4">Zgłoszone listy</h2>
+    <h2 class="font-hud-heading text-xl font-semibold text-hud-green mb-4 uppercase tracking-wider">
+      Zgłoszone listy
+    </h2>
     <div class="space-y-3">
       <% @submitted_lists.each do |list| %>
         <%= link_to event_army_list_path(@event, list),
-            class: "block bg-white rounded-lg shadow p-4 hover:shadow-md transition" do %>
+            class: "block bg-hud-bg-panel border border-hud-border rounded p-4 hover:border-hud-border-bright hover:bg-hud-bg-panel-hover transition no-underline" do %>
           <div class="flex justify-between items-center">
             <div>
-              <span class="font-medium text-gray-900"><%= list.player_name %></span>
-              <span class="text-sm text-gray-500 ml-2">
+              <span class="font-medium text-hud-green"><%= list.player_name %></span>
+              <span class="text-sm text-hud-text-dim ml-2">
                 <%= list.army_list_items.size %> jednostek &middot;
                 <%= list.total_points %> <%= @event.point_value_label %>
               </span>
             </div>
-            <span class="text-xs text-gray-400">
+            <span class="text-xs text-hud-text-muted">
               Zgłoszono <%= time_ago_in_words(list.submitted_at) %> temu
             </span>
           </div>

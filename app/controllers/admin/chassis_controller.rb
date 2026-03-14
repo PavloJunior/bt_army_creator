@@ -18,6 +18,7 @@ module Admin
     def create
       @chassis = Chassis.new(chassis_params)
       if @chassis.save
+        create_miniatures(@chassis, params[:miniature_count])
         SyncChassisJob.perform_later(@chassis.id)
         redirect_to admin_chassis_index_path, notice: "#{@chassis.name} added. Syncing variants from MUL..."
       else
@@ -66,6 +67,7 @@ module Admin
 
       if new_groups.size == 1
         chassis = Chassis.create!(name: new_groups.keys.first)
+        create_miniatures(chassis, params[:miniature_count])
         SyncChassisJob.perform_later(chassis.id)
         redirect_to admin_chassis_index_path, notice: "#{chassis.name} added. Syncing variants from MUL..."
         return
@@ -102,6 +104,13 @@ module Admin
 
     def chassis_params
       params.require(:chassis).permit(:name)
+    end
+
+    def create_miniatures(chassis, count)
+      count = count.to_i
+      return unless count > 0
+
+      count.times { chassis.miniatures.create! }
     end
   end
 end

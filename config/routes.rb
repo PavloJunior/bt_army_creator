@@ -45,6 +45,9 @@ Rails.application.routes.draw do
     resources :army_lists, only: [ :new, :create, :show, :edit, :update ] do
       member do
         patch :submit
+        patch :change_tech_base
+        patch :toggle_faction
+        delete :clear
       end
       resources :army_list_items, only: [ :create, :destroy, :update ]
     end

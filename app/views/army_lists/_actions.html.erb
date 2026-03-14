@@ -1,0 +1,30 @@
+<div id="army_list_actions">
+  <% if is_owner && army_list.draft? && army_list.army_list_items.any? %>
+    <div class="mt-6 flex gap-3">
+      <%= button_to "Wyczyść",
+          clear_event_army_list_path(event, army_list),
+          method: :delete,
+          class: "py-3 px-6 hud-btn-danger rounded text-sm cursor-pointer",
+          form: { data: {
+            controller: "confirm-modal",
+            confirm_modal_title_value: "Wyczyść listę",
+            confirm_modal_message_value: "Usunąć <span class='text-hud-amber'>wszystkie jednostki</span> z listy?",
+            confirm_modal_confirm_value: "Wyczyść",
+            confirm_modal_cancel_value: "Anuluj"
+          } },
+          data: { action: "click->confirm-modal#show" } %>
+      <%= button_to "Potwierdź listę",
+          submit_event_army_list_path(event, army_list),
+          method: :patch,
+          class: "flex-1 py-3 px-6 hud-btn-primary rounded text-sm cursor-pointer",
+          form: { data: {
+            controller: "confirm-modal",
+            confirm_modal_title_value: "Potwierdź listę",
+            confirm_modal_message_value: "Zgłosić tę listę? Twoje modele zostaną <span class='text-hud-amber'>zablokowane</span> na to wydarzenie.",
+            confirm_modal_confirm_value: "Potwierdź",
+            confirm_modal_cancel_value: "Anuluj"
+          } },
+          data: { action: "click->confirm-modal#show" } %>
+    </div>
+  <% end %>
+</div>
