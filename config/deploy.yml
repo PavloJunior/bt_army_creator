@@ -2,7 +2,7 @@
 service: bt_army_creator
 
 # Name of the container image (use your-user/app-name on external registries).
-image: PavloJunior/bt_army_creator
+image: pavlojunior/bt_army_creator
 
 # Deploy to these servers.
 servers:
