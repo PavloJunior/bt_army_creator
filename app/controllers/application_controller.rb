@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   include Authentication
+  include SiteAccessGate
   allow_unauthenticated_access
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.

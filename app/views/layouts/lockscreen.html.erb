@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>BT ARMY CREATOR — RESTRICTED ACCESS</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="turbo-visit-control" content="reload">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-hud-bg min-h-screen font-hud-mono text-hud-green overflow-hidden relative flex items-center justify-center">
+    <%# CRT vignette %>
+    <div class="fixed inset-0 pointer-events-none z-50" style="background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%);" aria-hidden="true"></div>
+
+    <%# Scanlines %>
+    <div class="fixed inset-0 pointer-events-none z-[51]" style="background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);" aria-hidden="true"></div>
+
+    <%# Scan beam %>
+    <div class="lockscreen-scan-beam" aria-hidden="true"></div>
+
+    <%# Floating particles %>
+    <% 8.times do |i| %>
+      <div class="lockscreen-particle lockscreen-particle-<%= i + 1 %>" aria-hidden="true"></div>
+    <% end %>
+
+    <div class="lockscreen-screen w-full max-w-xl px-8 relative z-10">
+      <%= yield %>
+    </div>
+  </body>
+</html>

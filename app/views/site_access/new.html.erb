@@ -1,0 +1,59 @@
+<%# Header %>
+<div class="lockscreen-header text-center mb-5 lockscreen-fade-glow">
+  <div class="text-[11px] text-hud-text-muted tracking-wider">╔══════════════════════════════════════════╗</div>
+  <div class="text-sm tracking-[4px] text-hud-amber lockscreen-pulse-amber font-bold">⚠ RESTRICTED ACCESS ⚠</div>
+  <div class="text-[11px] text-hud-text-muted tracking-wider">╚══════════════════════════════════════════╝</div>
+</div>
+
+<%# Boot sequence (skip on error) %>
+<% unless @error %>
+  <div class="boot-sequence">
+    <% [
+      { text: "> COMSTAR HPG NETWORK v3.049", css: "" },
+      { text: "> INITIALIZING SECURE CHANNEL...", css: "" },
+      { text: "> TERMINAL: NODE-7734", css: "" },
+      { text: "> ENCRYPTION: AES-512 .............. OK", css: "" },
+      { text: "> STATUS: ██ LOCKED ██", css: "text-hud-red" },
+      { text: "> AUTHENTICATION REQUIRED TO PROCEED", css: "" },
+    ].each_with_index do |line, i| %>
+      <div class="lockscreen-boot-line text-xs leading-8 text-hud-text-dim <%= line[:css] %>"
+           style="animation-delay: <%= 0.05 + (i * 0.15) %>s">
+        <span class="lockscreen-type-text" style="animation-delay: <%= 0.05 + (i * 0.15) %>s"><%= line[:text] %></span>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<%# Separator %>
+<hr class="lockscreen-separator border-none h-px my-4 lockscreen-fade-glow-delayed"
+    style="background: linear-gradient(90deg, transparent, rgba(0,255,65,0.3), rgba(0,255,65,0.5), rgba(0,255,65,0.3), transparent);
+           <%= @error ? 'opacity:1' : '' %>">
+
+<%# Auth form %>
+<div class="<%= @error ? '' : 'lockscreen-slide-up' %> mt-6">
+  <% if flash[:alert] %>
+    <div class="mb-4 text-xs text-hud-red tracking-wider" style="text-shadow: 0 0 8px rgba(255,68,68,0.4);">
+      > <%= flash[:alert] %>
+    </div>
+  <% end %>
+
+  <div class="text-[11px] text-hud-text-muted mb-1.5 tracking-[2px]">
+    PODAJ KOD DOSTĘPU:<span class="lockscreen-cursor"> █</span>
+  </div>
+
+  <%= form_with url: site_access_path, method: :post, class: "flex gap-2 items-stretch" do |f| %>
+    <%= f.password_field :password,
+        class: "flex-1 bg-[rgba(0,255,65,0.03)] border border-hud-border text-hud-green font-hud-mono text-sm px-3.5 py-2.5 outline-none focus:border-hud-green-dim focus:shadow-[0_0_15px_rgba(0,255,65,0.15),inset_0_0_10px_rgba(0,255,65,0.05)] transition-all placeholder-hud-text-muted",
+        placeholder: "••••••••",
+        autofocus: true %>
+    <%= f.submit "AUTORYZUJ ▸",
+        class: "lockscreen-auth-btn bg-[rgba(0,255,65,0.1)] border border-hud-border text-hud-green font-hud-mono text-xs px-5 py-2.5 cursor-pointer tracking-[2px] transition-all hover:bg-[rgba(0,255,65,0.2)] hover:border-hud-green-dim hover:shadow-[0_0_20px_rgba(0,255,65,0.2)] relative overflow-hidden" %>
+  <% end %>
+</div>
+
+<%# Status bar %>
+<div class="mt-7 flex justify-between text-[9px] text-[rgba(0,255,65,0.2)] <%= @error ? '' : 'lockscreen-fade-status' %>">
+  <span>FAILED ATTEMPTS: 0</span>
+  <span>PROTOCOL: LEVEL-V CLEARANCE</span>
+  <span>SIG: 0x4F2A</span>
+</div>

@@ -38,6 +38,10 @@ Rails.application.routes.draw do
     end
   end
 
+  # Site access gate
+  get  "access", to: "site_access#new", as: :site_access
+  post "access", to: "site_access#create"
+
   # Public pages
   root to: "events#index"
 

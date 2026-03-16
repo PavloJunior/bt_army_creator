@@ -508,3 +508,166 @@
   color: var(--color-hud-text-dim);
   white-space: nowrap;
 }
+
+/* === Lock Screen Animations === */
+
+@keyframes lockscreen-flicker {
+  0%, 97%, 100% { opacity: 1; }
+  98% { opacity: 0.85; }
+  99% { opacity: 0.92; }
+}
+
+@keyframes lockscreen-glitch {
+  0%, 94%, 100% { transform: translate(0); filter: none; }
+  95% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
+  96% { transform: translate(2px, -1px); filter: hue-rotate(-90deg); }
+  97% { transform: translate(0); filter: none; }
+}
+
+@keyframes lockscreen-type-writer {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes lockscreen-fade-in {
+  to { opacity: 1; }
+}
+
+@keyframes lockscreen-fade-glow {
+  0% { opacity: 0; text-shadow: none; }
+  100% { opacity: 1; text-shadow: 0 0 10px rgba(0, 255, 65, 0.3); }
+}
+
+@keyframes lockscreen-pulse-amber {
+  0%, 100% { text-shadow: 0 0 15px rgba(255, 170, 0, 0.5), 0 0 30px rgba(255, 170, 0, 0.2); }
+  50% { text-shadow: 0 0 20px rgba(255, 170, 0, 0.8), 0 0 40px rgba(255, 170, 0, 0.4), 0 0 60px rgba(255, 170, 0, 0.1); }
+}
+
+@keyframes lockscreen-slide-up {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lockscreen-scan-beam {
+  0% { top: -2px; opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes lockscreen-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes lockscreen-float-1 {
+  0% { transform: translate(0, 0); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translate(80px, -200px); opacity: 0; }
+}
+@keyframes lockscreen-float-2 {
+  0% { transform: translate(0, 0); opacity: 0; }
+  10% { opacity: 0.4; }
+  90% { opacity: 0.4; }
+  100% { transform: translate(-60px, -250px); opacity: 0; }
+}
+@keyframes lockscreen-float-3 {
+  0% { transform: translate(0, 0); opacity: 0; }
+  10% { opacity: 0.5; }
+  90% { opacity: 0.5; }
+  100% { transform: translate(40px, -180px); opacity: 0; }
+}
+
+.lockscreen-screen {
+  animation: lockscreen-flicker 4s infinite, lockscreen-glitch 8s infinite;
+}
+
+.lockscreen-boot-line {
+  opacity: 0;
+  animation: lockscreen-fade-in 0.1s forwards;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.lockscreen-type-text {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  animation: lockscreen-type-writer 0.15s steps(40) forwards;
+}
+
+.lockscreen-fade-glow {
+  opacity: 0;
+  animation: lockscreen-fade-glow 0.5s 0.1s forwards;
+}
+
+.lockscreen-pulse-amber {
+  animation: lockscreen-pulse-amber 3s ease-in-out infinite;
+}
+
+.lockscreen-slide-up {
+  animation: lockscreen-slide-up 0.2s both;
+}
+
+.lockscreen-fade-glow-delayed {
+  animation: lockscreen-fade-glow 0.2s both;
+}
+
+.lockscreen-fade-status {
+  animation: lockscreen-fade-glow 0.3s both;
+}
+
+.lockscreen-separator {
+  border: none;
+  height: 1px;
+}
+
+.lockscreen-cursor {
+  animation: lockscreen-blink 1s infinite;
+}
+
+.lockscreen-scan-beam {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,255,65,0.15), rgba(0,255,65,0.3), rgba(0,255,65,0.15), transparent);
+  z-index: 99;
+  animation: lockscreen-scan-beam 6s linear infinite;
+  pointer-events: none;
+}
+
+.lockscreen-auth-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,255,65,0.1), transparent);
+  transition: left 0.4s;
+}
+.lockscreen-auth-btn:hover::after {
+  left: 100%;
+}
+
+.lockscreen-particle {
+  position: fixed;
+  width: 2px;
+  height: 2px;
+  background: rgba(0, 255, 65, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.lockscreen-particle-1 { left: 15%; bottom: -10px; animation: lockscreen-float-1 6s 0s infinite; }
+.lockscreen-particle-2 { left: 35%; bottom: -10px; animation: lockscreen-float-2 8s 1s infinite; }
+.lockscreen-particle-3 { left: 55%; bottom: -10px; animation: lockscreen-float-3 7s 2s infinite; }
+.lockscreen-particle-4 { left: 75%; bottom: -10px; animation: lockscreen-float-1 9s 3s infinite; }
+.lockscreen-particle-5 { left: 90%; bottom: -10px; animation: lockscreen-float-2 6s 4s infinite; }
+.lockscreen-particle-6 { left: 25%; bottom: -10px; animation: lockscreen-float-3 10s 1.5s infinite; }
+.lockscreen-particle-7 { left: 65%; bottom: -10px; animation: lockscreen-float-1 7s 3.5s infinite; }
+.lockscreen-particle-8 { left: 45%; bottom: -10px; animation: lockscreen-float-2 8s 0.5s infinite; }
