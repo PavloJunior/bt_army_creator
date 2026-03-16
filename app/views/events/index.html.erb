@@ -1,17 +1,17 @@
-<% content_for(:status_context) { "PRZEGLĄDANIE WYDARZEŃ" } %>
+<% content_for(:status_context) { "PRZEGLĄDANIE BITEW" } %>
 
 <div class="max-w-6xl mx-auto">
   <h1 class="font-hud-heading text-3xl font-bold text-hud-green hud-glow mb-1 uppercase tracking-wide">
-    Wydarzenia BattleTech
+    Bitwy BattleTech
   </h1>
   <p class="text-hud-text-dim mb-8 text-sm">
-    Wybierz wydarzenie i stwórz listę z dostępnych modeli.
+    Wybierz bitwę i stwórz listę z dostępnych modeli.
   </p>
 
   <% if @active_events.any? %>
     <h2 class="font-hud-heading text-xl font-semibold text-hud-green mb-4 uppercase tracking-wider flex items-center gap-2">
       <span class="inline-block w-2 h-2 bg-hud-green rounded-full animate-pulse"></span>
-      Aktywne wydarzenia
+      Aktywne bitwy
     </h2>
     <div class="grid gap-4 mb-8 md:grid-cols-2">
       <% @active_events.each do |event| %>
@@ -22,7 +22,7 @@
 
   <% if @upcoming_events.any? %>
     <h2 class="font-hud-heading text-xl font-semibold text-hud-amber mb-4 uppercase tracking-wider">
-      Nadchodzące wydarzenia
+      Nadchodzące bitwy
     </h2>
     <div class="grid gap-4 mb-8 md:grid-cols-2">
       <% @upcoming_events.each do |event| %>
@@ -33,7 +33,7 @@
 
   <% if @upcoming_events.empty? && @active_events.empty? %>
     <div class="bg-hud-bg-panel border border-hud-border rounded p-12 text-center hud-panel">
-      <p class="text-hud-text-muted text-lg">Brak zaplanowanych wydarzeń. Sprawdź ponownie wkrótce!</p>
+      <p class="text-hud-text-muted text-lg">Brak zaplanowanych bitew. Sprawdź ponownie wkrótce!</p>
     </div>
   <% end %>
 </div>

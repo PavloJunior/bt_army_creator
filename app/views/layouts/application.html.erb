@@ -26,7 +26,7 @@
           </span>
         <% end %>
         <nav class="flex items-center gap-6 text-sm uppercase tracking-wider">
-          <%= link_to "Wydarzenia", events_path,
+          <%= link_to "Bitwy", events_path,
               class: "no-underline transition #{request.path == events_path || request.path == root_path ? 'text-hud-green hud-glow' : 'text-hud-text-dim hover:text-hud-green'}" %>
           <% if authenticated? %>
             <%= link_to "Admin", admin_root_path,

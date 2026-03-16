@@ -38,7 +38,7 @@
   <% if @army_list.submitted? %>
     <div class="mb-6 p-4 bg-hud-bg-panel border border-hud-green text-hud-green rounded text-sm hud-panel">
       <span class="hud-stamp hud-stamp-green mr-3">Zgłoszona</span>
-      Lista zgłoszona <%= I18n.l(@army_list.submitted_at, format: :long) %>. Modele zostały zarezerwowane na to wydarzenie.
+      Lista zgłoszona <%= I18n.l(@army_list.submitted_at, format: :long) %>. Modele zostały zarezerwowane na tę bitwę.
     </div>
     <% if @event.game_system == "alpha_strike" %>
       <div class="mb-6">
