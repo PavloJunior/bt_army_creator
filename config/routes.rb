@@ -48,6 +48,8 @@ Rails.application.routes.draw do
         patch :change_tech_base
         patch :toggle_faction
         delete :clear
+        get :print_cards
+        get :print_cards_ready
       end
       resources :army_list_items, only: [ :create, :destroy, :update ]
     end

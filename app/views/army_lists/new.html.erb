@@ -1,15 +1,15 @@
 <% content_for(:status_context) { "TWORZENIE NOWEJ LISTY // #{@event.name.upcase}" } %>
 
-<div class="max-w-lg mx-auto">
-  <h1 class="font-hud-heading text-2xl font-bold text-hud-green hud-glow mb-2 uppercase">
-    Utwórz listę armijną
+<div class="max-w-6xl mx-auto">
+  <h1 class="font-hud-heading text-3xl font-bold text-hud-green hud-glow mb-2 uppercase">
+    Utwórz listę
   </h1>
-  <p class="text-hud-text-dim mb-6 text-sm">
+  <p class="text-hud-text-dim mb-8 text-sm">
     <%= @event.name %> &middot; <%= @event.game_system_label %> &middot; <%= @event.point_cap %> <%= @event.point_value_label %>
   </p>
 
-  <div class="bg-hud-bg-panel border border-hud-border rounded p-6 hud-panel">
-    <%= form_with model: [@event, @army_list], class: "space-y-6" do |form| %>
+  <div class="bg-hud-bg-panel border border-hud-border rounded p-8 hud-panel">
+    <%= form_with model: [@event, @army_list], class: "space-y-8" do |form| %>
       <% if @army_list.errors.any? %>
         <div class="p-4 bg-hud-bg border border-hud-red text-hud-red rounded text-sm">
           <ul class="list-disc list-inside">
@@ -29,56 +29,56 @@
       </div>
 
       <div>
-        <span class="block text-xs font-medium text-hud-text-muted mb-3 uppercase tracking-wider">
+        <span class="block text-xs font-medium text-hud-text-muted mb-4 uppercase tracking-wider">
           Baza technologiczna
         </span>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <%# Inner Sphere %>
-          <label class="block cursor-pointer">
+          <label class="cursor-pointer">
             <%= form.radio_button :tech_base, "inner_sphere", class: "peer hidden" %>
-            <div class="flex flex-col items-center p-5 text-center border border-hud-border rounded
+            <div class="h-full grid grid-rows-[1fr_auto_5rem] justify-items-center py-12 px-8 text-center border border-hud-border rounded
                         bg-hud-bg text-hud-text-dim transition-all duration-200
                         hover:border-hud-border-bright hover:bg-hud-bg-panel-hover hover:text-hud-green-dim
                         peer-checked:border-hud-green peer-checked:text-hud-green peer-checked:bg-hud-green-glow
-                        peer-checked:shadow-[0_0_15px_rgba(var(--color-hud-green-rgb),0.15)]">
-              <svg class="w-16 h-16 mb-3" viewBox="0 0 500 500" fill="currentColor" aria-hidden="true">
+                        peer-checked:shadow-[0_0_20px_rgba(var(--color-hud-green-rgb),0.15)]">
+              <svg class="w-32 h-32 self-center" viewBox="0 0 500 500" fill="currentColor" aria-hidden="true">
                 <polygon points="250 98.64 278.96 180.08 357.03 142.97 319.92 221.04 401.36 250 319.92 278.96 357.03 357.03 278.96 319.92 250 401.36 221.04 319.92 142.97 357.03 180.08 278.96 98.64 250 180.08 221.04 142.97 142.97 221.04 180.08 250 98.64"/>
                 <path d="M288,432.4a187.07,187.07,0,0,1-38,3.88c-102.88,0-186.29-83.4-186.29-186.29S147.12,63.71,250,63.71,436.29,147.12,436.29,250a186.21,186.21,0,0,1-96.1,163h92A243.55,243.55,0,0,0,494.5,250C494.5,115,385,5.5,250,5.5S5.5,115,5.5,250,115,494.5,250,494.5c104.79,0,142.81-23.49,186-62.1Zm-162.15,7.76a11.64,11.64,0,1,1,11.64-11.64A11.64,11.64,0,0,1,125.81,440.17Zm54.33,27.17a11.64,11.64,0,1,1,11.64-11.64A11.64,11.64,0,0,1,180.14,467.33ZM234.48,479a11.64,11.64,0,1,1,11.64-11.64A11.64,11.64,0,0,1,234.48,479Z"/>
               </svg>
-              <span class="font-hud-heading text-base font-bold uppercase tracking-wider">Inner Sphere</span>
-              <span class="mt-1.5 text-xs opacity-60 leading-relaxed">Wielkie Rody i ich sojusznicy.</span>
+              <span class="font-hud-heading text-2xl font-bold uppercase tracking-wider self-end pb-1">Inner Sphere</span>
+              <span class="self-start pt-2 text-sm opacity-60 leading-relaxed">Star League, Wielkie Rody i ich sojusznicy oraz Peryferia.</span>
             </div>
           </label>
 
           <%# Clan %>
-          <label class="block cursor-pointer">
+          <label class="cursor-pointer">
             <%= form.radio_button :tech_base, "clan", class: "peer hidden" %>
-            <div class="flex flex-col items-center p-5 text-center border border-hud-border rounded
+            <div class="h-full grid grid-rows-[1fr_auto_5rem] justify-items-center py-12 px-8 text-center border border-hud-border rounded
                         bg-hud-bg text-hud-text-dim transition-all duration-200
                         hover:border-hud-border-bright hover:bg-hud-bg-panel-hover hover:text-hud-green-dim
                         peer-checked:border-hud-green peer-checked:text-hud-green peer-checked:bg-hud-green-glow
-                        peer-checked:shadow-[0_0_15px_rgba(var(--color-hud-green-rgb),0.15)]">
-              <svg class="w-16 h-16 mb-3" viewBox="0 0 500 500" fill="currentColor" aria-hidden="true">
+                        peer-checked:shadow-[0_0_20px_rgba(var(--color-hud-green-rgb),0.15)]">
+              <svg class="w-32 h-32 self-center" viewBox="0 0 500 500" fill="currentColor" aria-hidden="true">
                 <polygon points="290.79 128.35 314.7 135.93 363.57 50.56 280.59 98.06 290.79 128.35"/>
                 <polygon points="208.39 128.35 217.78 100.47 130.6 50.56 180.25 137.28 208.39 128.35"/>
                 <polygon points="290.79 205.74 285.77 238.99 363.57 283.53 315.15 198.95 290.79 205.74"/>
                 <polygon points="208.39 203.23 180.68 196.05 130.6 283.53 213.32 236.17 208.39 203.23"/>
                 <polyline points="249.59 4.5 283.67 130.75 284.89 134.36 288.52 135.51 419.38 169.08 288.77 198.5 284.09 199.81 283.36 204.62 249.63 495.5 215.82 202.12 215.09 197.21 210.28 195.96 80.62 168.82 210.66 135.51 214.3 134.36 215.51 130.75 249.59 4.5"/>
               </svg>
-              <span class="font-hud-heading text-base font-bold uppercase tracking-wider">Clans</span>
-              <span class="mt-1.5 text-xs opacity-60 leading-relaxed">Potomkowie Kerensky'ego — zaawansowana technologia elitarnych wojowników.</span>
+              <span class="font-hud-heading text-2xl font-bold uppercase tracking-wider self-end pb-1">Clans</span>
+              <span class="self-start pt-2 text-sm opacity-60 leading-relaxed">Potomkowie Kerensky'ego — zaawansowana technologia elitarnych wojowników.</span>
             </div>
           </label>
 
           <%# Mixed %>
-          <label class="block cursor-pointer">
+          <label class="cursor-pointer">
             <%= form.radio_button :tech_base, "mixed", class: "peer hidden" %>
-            <div class="flex flex-col items-center p-5 text-center border border-hud-border rounded
+            <div class="h-full grid grid-rows-[1fr_auto_5rem] justify-items-center py-12 px-8 text-center border border-hud-border rounded
                         bg-hud-bg text-hud-text-dim transition-all duration-200
                         hover:border-hud-border-bright hover:bg-hud-bg-panel-hover hover:text-hud-green-dim
                         peer-checked:border-hud-green peer-checked:text-hud-green peer-checked:bg-hud-green-glow
-                        peer-checked:shadow-[0_0_15px_rgba(var(--color-hud-green-rgb),0.15)]">
-              <svg class="w-16 h-16 mb-3" viewBox="0 0 500 500" fill="currentColor" aria-hidden="true">
+                        peer-checked:shadow-[0_0_20px_rgba(var(--color-hud-green-rgb),0.15)]">
+              <svg class="w-32 h-32 self-center" viewBox="0 0 500 500" fill="currentColor" aria-hidden="true">
                 <defs>
                   <clipPath id="mixed-left"><polygon points="0,0 500,0 0,500"/></clipPath>
                   <clipPath id="mixed-right"><polygon points="500,0 500,500 0,500"/></clipPath>
@@ -96,8 +96,8 @@
                 </g>
                 <line x1="500" y1="0" x2="0" y2="500" stroke="currentColor" stroke-width="4" fill="none" opacity="0.4"/>
               </svg>
-              <span class="font-hud-heading text-base font-bold uppercase tracking-wider">Mieszane</span>
-              <span class="mt-1.5 text-xs opacity-60 leading-relaxed">Połączenie technologii Wewnętrznej Sfery i Klanów w jednej armii.</span>
+              <span class="font-hud-heading text-2xl font-bold uppercase tracking-wider self-end pb-1">Mieszane</span>
+              <span class="self-start pt-2 text-sm opacity-60 leading-relaxed">Połączenie technologii Wewnętrznej Sfery i Klanów w jednej armii.</span>
             </div>
           </label>
         </div>
@@ -105,9 +105,9 @@
 
       <div class="flex gap-3">
         <%= form.submit "Rozpocznij budowanie",
-            class: "hud-btn-primary px-6 py-2 rounded text-sm cursor-pointer" %>
+            class: "hud-btn-primary px-8 py-3 rounded text-sm cursor-pointer" %>
         <%= link_to "Anuluj", event_path(@event),
-            class: "px-4 py-2 border border-hud-border text-hud-text-dim rounded text-sm hover:text-hud-green hover:border-hud-border-bright transition no-underline" %>
+            class: "px-6 py-3 border border-hud-border text-hud-text-dim rounded text-sm hover:text-hud-green hover:border-hud-border-bright transition no-underline" %>
       </div>
     <% end %>
   </div>

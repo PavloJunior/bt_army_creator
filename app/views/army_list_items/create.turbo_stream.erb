@@ -17,7 +17,16 @@
 
 <%= turbo_stream.remove "army_list_empty_state" %>
 
-<%= turbo_stream.replace "add_unit_errors", "" %>
+<% if @over_cap %>
+  <%= turbo_stream.update "toast" do %>
+    <div class="p-4 bg-hud-bg-panel border border-hud-amber text-hud-amber rounded text-sm shadow-lg shadow-hud-amber-glow"
+         data-controller="auto-dismiss" data-auto-dismiss-delay-value="4000">
+      <p>Przekroczono limit <%= @event.point_cap %> <%= @event.point_value_label %> — nie będzie można zgłosić listy bez zmniejszenia punktów.</p>
+    </div>
+  <% end %>
+<% else %>
+  <%= turbo_stream.update "toast", "" %>
+<% end %>
 
 <%= turbo_stream.update "army_item_count", @army_list.army_list_items.size.to_s %>
 

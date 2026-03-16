@@ -1,5 +1,8 @@
-<div id="add_unit_errors" class="mb-4 p-3 bg-hud-bg-panel border border-hud-red text-hud-red rounded text-sm">
-  <% errors.each do |error| %>
-    <p><%= error %></p>
-  <% end %>
+<div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-[60]">
+  <div class="p-4 bg-hud-bg-panel border border-hud-red text-hud-red rounded text-sm shadow-lg shadow-hud-red-glow"
+       data-controller="auto-dismiss" data-auto-dismiss-delay-value="5000">
+    <% errors.each do |error| %>
+      <p><%= error %></p>
+    <% end %>
+  </div>
 </div>

@@ -1,6 +1,7 @@
 require "test_helper"
 
 class ArmyListTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
   test "total_points for alpha_strike reflects skill adjustments" do
     list = army_lists(:draft_list)
     assert_equal "alpha_strike", list.event.game_system
@@ -55,5 +56,75 @@ class ArmyListTest < ActiveSupport::TestCase
 
     # Classic BT uses battle_value regardless of skill
     assert_equal 1897, list.total_points
+  end
+
+  test "all_cards_ready? returns true when all items have card images" do
+    list = army_lists(:draft_list)
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 3
+    )
+
+    card = VariantCard.create!(variant: variants(:atlas_d), skill: 3)
+    card.image.attach(io: StringIO.new("img"), filename: "card.jpg", content_type: "image/jpeg")
+
+    assert list.all_cards_ready?
+    assert_equal 0, list.pending_cards_count
+  end
+
+  test "all_cards_ready? returns false when card image is missing" do
+    list = army_lists(:draft_list)
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 3
+    )
+
+    assert_not list.all_cards_ready?
+    assert_equal 1, list.pending_cards_count
+  end
+
+  test "submit! enqueues FetchVariantCardJob for items without cards" do
+    list = army_lists(:draft_list)
+    list.event.update!(status: "active")
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 3
+    )
+
+    assert_enqueued_with(job: FetchVariantCardJob, args: [variants(:atlas_d).id, { skill: 3 }]) do
+      list.submit!
+    end
+  end
+
+  test "submit! does not enqueue job when card already exists" do
+    list = army_lists(:draft_list)
+    list.event.update!(status: "active")
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 3
+    )
+
+    card = VariantCard.create!(variant: variants(:atlas_d), skill: 3)
+    card.image.attach(io: StringIO.new("img"), filename: "card.jpg", content_type: "image/jpeg")
+
+    assert_no_enqueued_jobs(only: FetchVariantCardJob) do
+      list.submit!
+    end
+  end
+
+  test "pending_cards_count counts items with card record but no attached image" do
+    list = army_lists(:draft_list)
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+
+    # Fixture atlas_d_skill4 exists but has no image attached
+    assert_equal 1, list.pending_cards_count
   end
 end

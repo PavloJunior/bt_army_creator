@@ -24,7 +24,27 @@
       </div>
     </div>
     <div class="hud-gauge-track rounded-sm" style="<%= 'border-color: var(--color-hud-red); box-shadow: 0 0 8px var(--color-hud-red-glow);' if over_cap %>">
-      <div class="hud-gauge-fill" style="width: <%= percentage %>%; background: linear-gradient(90deg, #00ff41 0%, #88ff00 35%, #ffaa00 65%, #ff6622 85%, #ff4444 100%);"></div>
+      <%# Heat gauge: green → yellow at 50% → orange at 75% → red at 90%.
+          Each threshold maps to a position within the bar's own coordinate space. %>
+      <% if percentage <= 50
+           gradient = '#00ff41'
+         elsif percentage <= 75
+           # 50-75%: green with yellow creeping in at the tip
+           p50 = (50.0 / percentage * 100).round
+           gradient = "linear-gradient(90deg, #00ff41 0%, #00ff41 #{p50}%, #ffaa00 100%)"
+         elsif percentage <= 90
+           # 75-90%: green → yellow midpoint → orange at the tip
+           p50 = (50.0 / percentage * 100).round
+           p75 = (75.0 / percentage * 100).round
+           gradient = "linear-gradient(90deg, #00ff41 0%, #00ff41 #{p50}%, #ffaa00 #{p75}%, #ff6622 100%)"
+         else
+           # 90-100%: green → yellow → orange → red at the tip
+           p50 = (50.0 / percentage * 100).round
+           p75 = (75.0 / percentage * 100).round
+           p90 = (90.0 / percentage * 100).round
+           gradient = "linear-gradient(90deg, #00ff41 0%, #00ff41 #{p50}%, #ffaa00 #{p75}%, #ff6622 #{p90}%, #ff4444 100%)"
+         end %>
+      <div class="hud-gauge-fill" style="width: <%= percentage %>%; background: <%= gradient %>;"></div>
       <div class="hud-gauge-ticks"></div>
     </div>
     <div class="hud-gauge-readout <%= color_class %>" style="<%= 'text-shadow: 0 0 10px var(--color-hud-red-glow);' if over_cap %>">

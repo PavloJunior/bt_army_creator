@@ -1,5 +1,6 @@
 class ArmyList < ApplicationRecord
   class LockConflictError < StandardError; end
+  class PointCapExceededError < StandardError; end
 
   TECH_BASES = %w[inner_sphere clan mixed].freeze
 
@@ -44,13 +45,33 @@ class ArmyList < ApplicationRecord
     status == "draft"
   end
 
-  def submit!
-    transaction do
-      army_list_items.includes(:miniature).each do |item|
-        if item.miniature.locked_for_event?(event)
-          raise LockConflictError, "#{item.miniature.display_name} nie jest już dostępna"
-        end
+  def all_cards_ready?
+    pending_cards_count == 0
+  end
 
+  def pending_cards_count
+    army_list_items.includes(variant: { variant_cards: :image_attachment }).count do |item|
+      card = item.card_image
+      !card&.image&.attached?
+    end
+  end
+
+  def submit!
+    if total_points > event.point_cap
+      raise PointCapExceededError,
+        "Nie można zgłosić listy — przekroczono limit #{event.point_cap} #{event.point_value_label} (razem: #{total_points} #{event.point_value_label})"
+    end
+
+    items = army_list_items.includes(:miniature)
+    locked = items.select { |item| item.miniature.locked_for_event?(event) }
+
+    if locked.any?
+      names = locked.map { |item| item.miniature.chassis.name }.uniq.join(", ")
+      raise LockConflictError, "Następujące modele nie są już dostępne: #{names}"
+    end
+
+    transaction do
+      items.each do |item|
         MiniatureLock.create!(
           miniature: item.miniature,
           event: event,
@@ -61,6 +82,7 @@ class ArmyList < ApplicationRecord
       update!(status: "submitted", submitted_at: Time.current)
     end
 
+    prefetch_missing_cards
     broadcast_lock_updates
   rescue ActiveRecord::RecordNotUnique
     raise LockConflictError, "Jedna lub więcej miniatur została właśnie zajęta przez innego gracza. Sprawdź swoją listę."
@@ -76,6 +98,14 @@ class ArmyList < ApplicationRecord
   end
 
   private
+
+  def prefetch_missing_cards
+    army_list_items.includes(variant: { variant_cards: { image_attachment: :blob } }).each do |item|
+      card = item.card_image
+      next if card&.image&.attached?
+      FetchVariantCardJob.perform_later(item.variant_id, skill: item.skill)
+    end
+  end
 
   def broadcast_lock_updates
     Turbo::StreamsChannel.broadcast_refresh_to("event_#{event_id}_miniatures")

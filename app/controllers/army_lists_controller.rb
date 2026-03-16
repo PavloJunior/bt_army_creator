@@ -2,7 +2,7 @@ class ArmyListsController < ApplicationController
   include ArmyListOwnership
 
   before_action :set_event
-  before_action :set_army_list, only: [ :show, :edit, :update, :submit, :change_tech_base, :toggle_faction, :clear ]
+  before_action :set_army_list, only: [ :show, :edit, :update, :submit, :change_tech_base, :toggle_faction, :clear, :print_cards, :print_cards_ready ]
   before_action :authorize_army_list!, only: [ :edit, :update, :submit, :change_tech_base, :toggle_faction, :clear ]
 
   def new
@@ -96,11 +96,27 @@ class ArmyListsController < ApplicationController
     end
   end
 
+  def print_cards
+    unless @army_list.submitted? && @event.game_system == "alpha_strike"
+      redirect_to event_army_list_path(@event, @army_list),
+                  alert: "Drukowanie kart dostępne tylko dla zgłoszonych list Alpha Strike."
+      return
+    end
+
+    @items = @army_list.army_list_items.includes(variant: { variant_cards: :image_attachment })
+    render layout: "print"
+  end
+
+  def print_cards_ready
+    pending = @army_list.pending_cards_count
+    render json: { ready: pending == 0, pending: pending }
+  end
+
   def submit
     @army_list.submit!
     redirect_to event_army_list_path(@event, @army_list),
-                notice: "Lista armijna zgłoszona! Twoje modele są zablokowane."
-  rescue ArmyList::LockConflictError => e
+                notice: "Lista zgłoszona! Twoje modele zostały zarezerwowane."
+  rescue ArmyList::LockConflictError, ArmyList::PointCapExceededError => e
     redirect_to event_army_list_path(@event, @army_list), alert: e.message
   end
 

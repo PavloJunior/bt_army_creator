@@ -15,6 +15,12 @@ class ArmyListItem < ApplicationRecord
     variant.card_for_skill(skill)
   end
 
+  def exceeds_point_cap?
+    return false unless variant && army_list
+
+    army_list.total_points > army_list.event.point_cap
+  end
+
   private
 
   def variant_belongs_to_chassis

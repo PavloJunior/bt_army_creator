@@ -18,10 +18,12 @@ class ArmyListItemsController < ApplicationController
     if miniature.nil?
       respond_to do |format|
         format.turbo_stream do
-          render turbo_stream: turbo_stream.replace(
-            "add_unit_errors",
-            partial: "army_list_items/errors",
-            locals: { errors: [ "Brak dostępnych modeli dla #{chassis.name}" ] }
+          render turbo_stream: turbo_stream.update("toast",
+            helpers.tag.div(
+              helpers.tag.p("Brak dostępnych modeli dla #{chassis.name}"),
+              class: "p-4 bg-hud-bg-panel border border-hud-red text-hud-red rounded text-sm shadow-lg shadow-hud-red-glow",
+              data: { controller: "auto-dismiss", auto_dismiss_delay_value: "5000" }
+            )
           )
         end
         format.html { redirect_to event_army_list_path(@event, @army_list), alert: "Brak dostępnych modeli dla #{chassis.name}" }
@@ -37,6 +39,7 @@ class ArmyListItemsController < ApplicationController
     if @item.save
       @chassis = chassis
       compute_chassis_locals(@chassis)
+      @over_cap = @item.exceeds_point_cap?
 
       respond_to do |format|
         format.turbo_stream
@@ -45,10 +48,12 @@ class ArmyListItemsController < ApplicationController
     else
       respond_to do |format|
         format.turbo_stream do
-          render turbo_stream: turbo_stream.replace(
-            "add_unit_errors",
-            partial: "army_list_items/errors",
-            locals: { errors: @item.errors.full_messages }
+          render turbo_stream: turbo_stream.update("toast",
+            helpers.tag.div(
+              helpers.safe_join(@item.errors.full_messages.map { |msg| helpers.tag.p(msg) }),
+              class: "p-4 bg-hud-bg-panel border border-hud-red text-hud-red rounded text-sm shadow-lg shadow-hud-red-glow",
+              data: { controller: "auto-dismiss", auto_dismiss_delay_value: "5000" }
+            )
           )
         end
         format.html { redirect_to event_army_list_path(@event, @army_list), alert: @item.errors.full_messages.join(", ") }

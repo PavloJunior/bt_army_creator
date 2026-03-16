@@ -1,0 +1,28 @@
+<% content_for(:title) { "#{@army_list.player_name} — Karty jednostek" } %>
+
+<div class="screen-only print-header">
+  <h1><%= @army_list.player_name %></h1>
+  <p>
+    <%= @event.name %> &middot;
+    <%= @event.game_system_label %> &middot;
+    <%= @army_list.army_list_items.size %> jednostek &middot;
+    <%= @army_list.total_points %> <%= @event.point_value_label %>
+  </p>
+  <div class="print-actions">
+    <button onclick="window.print()">Drukuj</button>
+    <%= link_to "Wróć do listy", event_army_list_path(@event, @army_list) %>
+  </div>
+</div>
+
+<div class="card-grid">
+  <% @items.each do |item| %>
+    <div class="card-cell">
+      <% card = item.card_image %>
+      <% if card&.image&.attached? %>
+        <%= image_tag rails_storage_proxy_path(card.image), alt: item.variant.name %>
+      <% else %>
+        <div class="card-placeholder">Karta niedostępna</div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

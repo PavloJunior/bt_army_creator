@@ -48,7 +48,14 @@
             event_army_list_army_list_item_path(event, army_list, item),
             method: :delete,
             class: "hud-btn-danger px-3 py-1 rounded text-xs cursor-pointer",
-            data: { turbo_confirm: "Usunąć tę jednostkę?" } %>
+            form: { data: {
+              controller: "confirm-modal",
+              confirm_modal_title_value: "Usuń jednostkę",
+              confirm_modal_message_value: "Usunąć <span class='text-hud-amber'>#{item.variant.name}</span> z listy?",
+              confirm_modal_confirm_value: "Usuń",
+              confirm_modal_cancel_value: "Anuluj"
+            } },
+            data: { action: "click->confirm-modal#show" } %>
       <% end %>
     </div>
   </div>

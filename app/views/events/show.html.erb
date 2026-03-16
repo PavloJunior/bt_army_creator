@@ -1,6 +1,6 @@
 <% content_for(:status_context) { "SZCZEGÓŁY WYDARZENIA // #{@event.name.upcase}" } %>
 
-<div class="max-w-4xl mx-auto">
+<div class="max-w-6xl mx-auto">
   <div class="bg-hud-bg-panel border border-hud-border rounded p-6 mb-6 hud-panel hud-blueprint-grid">
     <div class="flex justify-between items-start">
       <div>
@@ -50,7 +50,7 @@
     <div class="mb-6">
       <%= link_to new_event_army_list_path(@event),
           class: "inline-block hud-btn-primary px-6 py-3 rounded text-sm no-underline" do %>
-        + UTWÓRZ LISTĘ ARMIJNĄ
+        + UTWÓRZ LISTĘ
       <% end %>
     </div>
   <% end %>
