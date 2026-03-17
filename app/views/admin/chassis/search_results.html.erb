@@ -4,38 +4,66 @@
       class: "px-4 py-2 hud-btn-danger rounded" %>
 </div>
 
-<div class="grid gap-4">
-  <% @chassis_groups.each do |group| %>
-    <div class="bg-hud-bg-panel border border-hud-border rounded p-4 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <% if group[:image_url].present? %>
-          <img src="<%= group[:image_url] %>" alt="<%= group[:name] %>" class="w-16 h-16 object-contain">
-        <% else %>
-          <div class="w-16 h-16 bg-hud-bg border border-hud-border rounded flex items-center justify-center text-hud-text-muted text-xs">No image</div>
-        <% end %>
+<%= form_with url: batch_create_admin_chassis_index_path, method: :post,
+    data: { controller: "batch-select" } do |f| %>
+  <%= f.hidden_field :shared, value: "", data: { batch_select_target: "sharedField" } %>
+
+  <div class="grid gap-4 mb-24">
+    <% @chassis_groups.each do |group| %>
+      <div class="bg-hud-bg-panel border border-hud-border rounded p-4 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <% unless @existing_names.include?(group[:name]) %>
+            <input type="checkbox" name="chassis_names[]" value="<%= group[:name] %>"
+                   class="w-5 h-5 rounded border-hud-border text-hud-green accent-hud-green cursor-pointer"
+                   data-batch-select-target="checkbox"
+                   data-action="change->batch-select#toggle">
+          <% end %>
+          <% if group[:image_url].present? %>
+            <img src="<%= group[:image_url] %>" alt="<%= group[:name] %>" class="w-16 h-16 object-contain">
+          <% else %>
+            <div class="w-16 h-16 bg-hud-bg border border-hud-border rounded flex items-center justify-center text-hud-text-muted text-xs">No image</div>
+          <% end %>
+          <div>
+            <p class="font-bold text-hud-green"><%= group[:name] %></p>
+            <p class="text-sm text-hud-text-muted">
+              <%= [group[:unit_type], group[:tonnage] ? "#{group[:tonnage]}t" : nil].compact.join(" · ") %>
+              · <%= pluralize(group[:variant_count], "variant") %>
+            </p>
+          </div>
+        </div>
+
         <div>
-          <p class="font-bold text-hud-green"><%= group[:name] %></p>
-          <p class="text-sm text-hud-text-muted">
-            <%= [group[:unit_type], group[:tonnage] ? "#{group[:tonnage]}t" : nil].compact.join(" · ") %>
-            · <%= pluralize(group[:variant_count], "variant") %>
-          </p>
+          <% if @existing_names.include?(group[:name]) %>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-hud-bg border border-hud-border text-hud-text-muted">
+              Already added
+            </span>
+          <% end %>
         </div>
       </div>
+    <% end %>
+  </div>
 
-      <div>
-        <% if @existing_names.include?(group[:name]) %>
-          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-hud-bg border border-hud-border text-hud-text-muted">
-            Already added
-          </span>
-        <% else %>
-          <%= form_with url: admin_chassis_index_path, method: :post, class: "inline flex items-center gap-2" do |f| %>
-            <%= f.hidden_field :chassis, value: group[:name], name: "chassis[name]" %>
-            <%= f.number_field :miniature_count, value: params[:miniature_count] || 1, min: 0, max: 99,
-                class: "w-16 px-2 py-2 hud-input hud-number-input rounded text-center", title: "Number of miniatures" %>
-            <%= f.submit "Add", class: "px-4 py-2 hud-btn-primary rounded cursor-pointer" %>
-          <% end %>
-        <% end %>
+  <div class="fixed bottom-0 left-0 right-0 bg-hud-bg-panel border-t border-hud-border p-4 shadow-lg z-50 hidden"
+       data-batch-select-target="actions">
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-4">
+      <span class="text-sm text-hud-text-muted">
+        <span data-batch-select-target="count">0</span> selected
+      </span>
+
+      <div class="flex items-center gap-3">
+        <label class="text-sm text-hud-text-muted">Miniatures:</label>
+        <%= f.number_field :miniature_count, value: params[:miniature_count] || 1, min: 0, max: 99,
+            class: "w-16 px-2 py-2 hud-input hud-number-input rounded text-center" %>
+
+        <button type="submit" class="px-4 py-2 hud-btn-primary rounded cursor-pointer"
+                data-action="click->batch-select#submitNormal">
+          Add Selected
+        </button>
+        <button type="submit" class="px-4 py-2 hud-btn-amber rounded cursor-pointer"
+                data-action="click->batch-select#submitShared">
+          Add as Shared Minis
+        </button>
       </div>
     </div>
-  <% end %>
-</div>
+  </div>
+<% end %>

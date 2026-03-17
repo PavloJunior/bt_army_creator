@@ -109,6 +109,33 @@ class ArmyListItemTest < ActiveSupport::TestCase
     assert_nil @item.adjusted_point_value
   end
 
+  # Shared miniatures validation tests
+
+  test "variant_belongs_to_chassis allows cross-chassis variant in same group" do
+    list = army_lists(:draft_list)
+    item = ArmyListItem.new(
+      army_list: list,
+      miniature: miniatures(:schrek_mini_1),
+      variant: variants(:schrek_ppc_standard)
+    )
+    assert item.valid?, "Expected item to be valid but got: #{item.errors.full_messages.join(', ')}"
+  end
+
+  test "variant_belongs_to_chassis rejects cross-chassis variant outside group" do
+    list = army_lists(:draft_list)
+    item = ArmyListItem.new(
+      army_list: list,
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:commando_2d)
+    )
+    assert_not item.valid?
+    assert_includes item.errors[:variant].join, "must belong to the same chassis"
+  end
+
+  test "variant_belongs_to_chassis still works for ungrouped chassis" do
+    assert @item.valid?
+  end
+
   # Tech base validation tests
 
   test "variant_matches_tech_base allows IS variant on inner_sphere list" do

@@ -13,9 +13,12 @@ Rails.application.routes.draw do
     resources :chassis do
       collection do
         get :search
+        post :batch_create
       end
       member do
         post :sync_variants
+        post :link
+        delete :unlink
       end
       resources :miniatures, only: [ :new, :create, :edit, :update, :destroy ] do
         collection do

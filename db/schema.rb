@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_13_120905) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_16_224108) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -75,11 +75,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_120905) do
   create_table "chassis", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "image_url"
+    t.string "mini_group_id"
     t.datetime "mul_synced_at"
     t.string "name", null: false
     t.integer "tonnage"
     t.string "unit_type"
     t.datetime "updated_at", null: false
+    t.index ["mini_group_id"], name: "index_chassis_on_mini_group_id"
     t.index ["name"], name: "index_chassis_on_name", unique: true
   end
 

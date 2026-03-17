@@ -25,7 +25,7 @@ class ArmyListItem < ApplicationRecord
 
   def variant_belongs_to_chassis
     return unless miniature && variant
-    unless variant.chassis_id == miniature.chassis_id
+    unless miniature.chassis.group_chassis_ids.include?(variant.chassis_id)
       errors.add(:variant, "must belong to the same chassis as the miniature")
     end
   end

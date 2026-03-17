@@ -1,14 +1,36 @@
 module Admin
   class ChassisController < BaseController
-    before_action :set_chassis, only: [ :show, :edit, :update, :destroy, :sync_variants ]
+    before_action :set_chassis, only: [ :show, :edit, :update, :destroy, :sync_variants, :link, :unlink ]
 
     def index
       @chassis = Chassis.order(:name).includes(:variants, :miniatures)
+
+      # Precompute pool sizes to avoid N+1 queries for shared mini groups
+      group_ids = @chassis.filter_map(&:mini_group_id).uniq
+      group_counts = if group_ids.any?
+        Miniature.joins(:chassis)
+          .where(chassis: { mini_group_id: group_ids })
+          .group("chassis.mini_group_id")
+          .count
+      else
+        {}
+      end
+
+      @mini_pool_sizes = @chassis.each_with_object({}) do |c, h|
+        h[c.id] = if c.mini_group_id.present?
+          group_counts[c.mini_group_id] || 0
+        else
+          c.miniatures.size # uses eager-loaded association
+        end
+      end
     end
 
     def show
       @variants = @chassis.variants.order(:name).includes(:variant_cards)
       @miniatures = @chassis.miniatures.order(:label)
+      @pool_miniatures = @chassis.miniatures_pool.includes(:chassis).order(:id)
+      @sibling_chassis = @chassis.sibling_chassis.order(:name)
+      @linkable_chassis = Chassis.where.not(id: @chassis.group_chassis_ids).order(:name)
     end
 
     def new
@@ -89,6 +111,69 @@ module Admin
       render :search_results
     rescue MulClient::ApiError => e
       redirect_to new_admin_chassis_path, alert: "MUL API error: #{e.message}"
+    end
+
+    def batch_create
+      names = Array(params[:chassis_names]).reject(&:blank?)
+      if names.empty?
+        redirect_to new_admin_chassis_path, alert: "No chassis selected."
+        return
+      end
+
+      mini_count = params[:miniature_count].to_i
+      shared = params[:shared] == "true"
+      group_id = shared ? SecureRandom.uuid : nil
+
+      created = []
+      Chassis.transaction do
+        names.each do |name|
+          next if Chassis.exists?(name: name)
+          chassis = Chassis.create!(name: name, mini_group_id: group_id)
+          create_miniatures(chassis, mini_count) unless shared
+          created << chassis
+        end
+
+        if shared && created.any?
+          create_miniatures(created.first, mini_count)
+        end
+      end
+
+      created.each { |c| SyncChassisJob.perform_later(c.id) }
+
+      notice = "#{created.size} chassis added."
+      notice += " Sharing miniatures." if shared && created.size > 1
+      redirect_to admin_chassis_index_path, notice: notice
+    end
+
+    def link
+      target = Chassis.find(params[:target_chassis_id])
+      group_id = @chassis.mini_group_id || target.mini_group_id || SecureRandom.uuid
+
+      Chassis.transaction do
+        if @chassis.mini_group_id.present? && target.mini_group_id.present? && @chassis.mini_group_id != target.mini_group_id
+          Chassis.where(mini_group_id: target.mini_group_id).update_all(mini_group_id: group_id)
+        end
+
+        @chassis.update!(mini_group_id: group_id)
+        target.update!(mini_group_id: group_id)
+      end
+
+      redirect_to admin_chassis_path(@chassis), notice: "#{target.name} linked to #{@chassis.name}'s miniature pool."
+    end
+
+    def unlink
+      old_group_id = @chassis.mini_group_id
+
+      Chassis.transaction do
+        @chassis.update!(mini_group_id: nil)
+
+        if old_group_id.present?
+          remaining = Chassis.where(mini_group_id: old_group_id)
+          remaining.first.update!(mini_group_id: nil) if remaining.count == 1
+        end
+      end
+
+      redirect_to admin_chassis_path(@chassis), notice: "#{@chassis.name} removed from sharing group."
     end
 
     def sync_variants

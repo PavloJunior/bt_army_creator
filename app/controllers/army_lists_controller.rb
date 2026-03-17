@@ -26,11 +26,19 @@ class ArmyListsController < ApplicationController
     locked_ids = @event.miniature_locks.pluck(:miniature_id)
     excluded_ids = (used_ids + locked_ids).uniq
 
-    all_minis_by_chassis = Miniature.includes(:chassis).group_by(&:chassis)
-    @chassis_data = all_minis_by_chassis.map do |chassis, minis|
-      available = minis.reject { |m| excluded_ids.include?(m.id) }
-      [ chassis, available.size, minis.size ]
-    end.sort_by { |c, _, _| c.name }
+    chassis_with_minis_ids = Miniature.distinct.pluck(:chassis_id)
+    group_ids = Chassis.where(id: chassis_with_minis_ids).where.not(mini_group_id: nil).pluck(:mini_group_id).uniq
+    grouped_chassis_ids = group_ids.any? ? Chassis.where(mini_group_id: group_ids).pluck(:id) : []
+    all_chassis_ids = (chassis_with_minis_ids + grouped_chassis_ids).uniq
+    all_chassis = Chassis.where(id: all_chassis_ids).order(:name)
+
+    pool_cache = {}
+    @chassis_data = all_chassis.map do |chassis|
+      cache_key = chassis.mini_group_id || chassis.id
+      pool = pool_cache[cache_key] ||= chassis.miniatures_pool.to_a
+      available = pool.reject { |m| excluded_ids.include?(m.id) }
+      [ chassis, available.size, pool.size ]
+    end
 
     @is_owner = owner_of_army_list?(@army_list) || admin_signed_in?
     @sidebar_factions = Faction.for_sidebar(@army_list.tech_base)

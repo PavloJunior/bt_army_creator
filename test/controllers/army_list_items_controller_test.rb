@@ -118,6 +118,59 @@ class ArmyListItemsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.content_type, "turbo-stream"
   end
 
+  # Shared miniatures tests
+
+  test "create auto-assigns miniature from shared pool for sibling chassis" do
+    gauss = chassis(:schrek_gauss)
+    ppc = chassis(:schrek_ppc)
+    ppc_variant = variants(:schrek_ppc_standard)
+
+    # schrek_mini_1 and schrek_mini_2 belong to schrek_gauss but should be usable for schrek_ppc via shared pool
+    assert_difference("ArmyListItem.count", 1) do
+      post event_army_list_army_list_items_path(@event, @army_list),
+        params: { army_list_item: { chassis_id: ppc.id, variant_id: ppc_variant.id } },
+        as: :turbo_stream
+    end
+
+    assert_response :success
+    item = @army_list.army_list_items.order(:id).last
+    assert_equal ppc_variant, item.variant
+    # Miniature should come from the shared pool (owned by gauss chassis)
+    assert_includes gauss.miniatures.pluck(:id), item.miniature_id
+  end
+
+  test "create turbo stream includes sibling chassis card replacements" do
+    ppc = chassis(:schrek_ppc)
+    gauss = chassis(:schrek_gauss)
+    ppc_variant = variants(:schrek_ppc_standard)
+
+    post event_army_list_army_list_items_path(@event, @army_list),
+      params: { army_list_item: { chassis_id: ppc.id, variant_id: ppc_variant.id } },
+      as: :turbo_stream
+
+    assert_response :success
+    assert_includes response.body, "available_chassis_#{ppc.id}"
+    assert_includes response.body, "available_chassis_#{gauss.id}"
+  end
+
+  test "destroy turbo stream includes sibling chassis card replacements" do
+    ppc = chassis(:schrek_ppc)
+    gauss = chassis(:schrek_gauss)
+    ppc_variant = variants(:schrek_ppc_standard)
+
+    item = @army_list.army_list_items.create!(
+      miniature: miniatures(:schrek_mini_1),
+      variant: ppc_variant
+    )
+
+    delete event_army_list_army_list_item_path(@event, @army_list, item),
+      as: :turbo_stream
+
+    assert_response :success
+    assert_includes response.body, "available_chassis_#{ppc.id}"
+    assert_includes response.body, "available_chassis_#{gauss.id}"
+  end
+
   test "create rejects variant with wrong tech base" do
     @item.destroy
     @army_list.update!(tech_base: "clan")

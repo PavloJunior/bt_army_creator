@@ -10,6 +10,7 @@ module SiteAccessGate
   def require_site_access
     return if site_password.blank?
     return if controller_path.start_with?("admin/")
+    return if controller_path.start_with?("mission_control/")
     return if controller_path == "site_access"
     return if valid_site_access_cookie?
 

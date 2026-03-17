@@ -29,17 +29,23 @@
      data-variant-preview-variants-value="<%= variants_json %>"
      data-variant-preview-game-system-value="<%= event.game_system %>">
 
-  <div class="flex justify-between items-center mb-3">
-    <div>
+  <div class="flex justify-between items-center gap-2 mb-3">
+    <div class="flex items-baseline gap-1.5 min-w-0 flex-wrap">
       <span class="font-hud-heading font-semibold text-hud-green"><%= chassis.name %></span>
-      <span class="text-xs text-hud-text-muted ml-1"><%= chassis.tonnage %>t</span>
+      <% if chassis.shared_minis? %>
+        <span class="text-xs px-1.5 py-0.5 rounded bg-hud-amber/10 border border-hud-amber/40 text-hud-amber"
+              title="Dzieli modele z: <%= chassis.sibling_chassis.pluck(:name).join(', ') %>">
+          Wspólne
+        </span>
+      <% end %>
+      <span class="text-xs text-hud-text-muted"><%= chassis.tonnage %>t</span>
     </div>
     <% if disabled %>
-      <span class="text-xs px-2 py-0.5 rounded border border-hud-border text-hud-text-muted uppercase">
+      <span class="text-xs px-2 py-0.5 rounded border border-hud-border text-hud-text-muted uppercase whitespace-nowrap shrink-0">
         Brak dostępnych
       </span>
     <% else %>
-      <span class="text-xs px-2 py-0.5 rounded border border-hud-green text-hud-green">
+      <span class="text-xs px-2 py-0.5 rounded border border-hud-green text-hud-green whitespace-nowrap shrink-0">
         <%= available_count %> <%= available_count == 1 ? "dostępna" : "dostępne" %>
       </span>
     <% end %>

@@ -11,7 +11,7 @@ class ArmyListItemsController < ApplicationController
 
     used_ids = @army_list.army_list_items.pluck(:miniature_id)
     locked_ids = @event.miniature_locks.pluck(:miniature_id)
-    miniature = chassis.miniatures
+    miniature = chassis.miniatures_pool
       .where.not(id: used_ids + locked_ids)
       .order(:id).first
 
@@ -102,11 +102,22 @@ class ArmyListItemsController < ApplicationController
   def compute_chassis_locals(chassis)
     used_ids = @army_list.army_list_items.reload.pluck(:miniature_id)
     locked_ids = @event.miniature_locks.pluck(:miniature_id)
-    @available_count = chassis.miniatures.where.not(id: used_ids + locked_ids).count
-    @total_count = chassis.miniatures.count
+    excluded_ids = used_ids + locked_ids
+    @available_count = chassis.miniatures_pool.where.not(id: excluded_ids).count
+    @total_count = chassis.miniatures_pool.count
     faction_filter = @army_list.army_list_factions.pluck(:faction_mul_id).presence
     @variants = @event.available_variants_for_chassis(chassis, tech_base: @army_list.tech_base, faction_mul_ids: faction_filter)
     @chassis = chassis
+
+    @sibling_chassis_data = chassis.sibling_chassis.map do |sibling|
+      sibling_variants = @event.available_variants_for_chassis(sibling, tech_base: @army_list.tech_base, faction_mul_ids: faction_filter)
+      {
+        chassis: sibling,
+        available_count: @available_count,
+        total_count: @total_count,
+        variants: sibling_variants
+      }
+    end
   end
 
   def ensure_card_exists(item)

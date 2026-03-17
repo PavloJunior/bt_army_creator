@@ -28,7 +28,7 @@
             <td class="px-6 py-4 whitespace-nowrap text-sm text-hud-text-dim"><%= chassis.unit_type || "—" %></td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-hud-text-dim text-right"><%= chassis.tonnage || "—" %></td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-hud-text-dim text-right"><%= chassis.variants.size %></td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-hud-text-dim text-right"><%= chassis.miniatures.size %></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-hud-text-dim text-right"><%= @mini_pool_sizes[chassis.id] %></td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-hud-text-dim">
               <%= chassis.mul_synced_at ? time_ago_in_words(chassis.mul_synced_at) + " ago" : "Never" %>
             </td>

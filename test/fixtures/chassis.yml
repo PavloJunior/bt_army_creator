@@ -12,3 +12,15 @@ timber_wolf:
   name: Timber Wolf
   unit_type: BattleMech
   tonnage: 75
+
+schrek_gauss:
+  name: Schrek Gauss Carrier
+  unit_type: Vehicle
+  tonnage: 80
+  mini_group_id: shared-schrek-group
+
+schrek_ppc:
+  name: Schrek PPC Carrier
+  unit_type: Vehicle
+  tonnage: 80
+  mini_group_id: shared-schrek-group

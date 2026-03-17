@@ -9,3 +9,11 @@ commando_mini:
 timber_wolf_mini:
   chassis: timber_wolf
   label: Timber Wolf #1
+
+schrek_mini_1:
+  chassis: schrek_gauss
+  label: Schrek #1
+
+schrek_mini_2:
+  chassis: schrek_gauss
+  label: Schrek #2

@@ -45,3 +45,35 @@ timber_wolf_prime:
   era_id: 10
   era_name: Star League
   rules_level: Standard
+
+schrek_gauss_standard:
+  chassis: schrek_gauss
+  mul_id: 9001
+  name: Schrek Gauss Carrier Standard
+  variant_code: Standard
+  battle_value: 1200
+  point_value: 35
+  tonnage: 80
+  unit_type: Vehicle
+  technology: Inner Sphere
+  role: Sniper
+  date_introduced: "3050"
+  era_id: 10
+  era_name: Star League
+  rules_level: Standard
+
+schrek_ppc_standard:
+  chassis: schrek_ppc
+  mul_id: 9002
+  name: Schrek PPC Carrier Standard
+  variant_code: Standard
+  battle_value: 1100
+  point_value: 30
+  tonnage: 80
+  unit_type: Vehicle
+  technology: Inner Sphere
+  role: Sniper
+  date_introduced: "2813"
+  era_id: 10
+  era_name: Star League
+  rules_level: Introductory

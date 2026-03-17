@@ -12,6 +12,16 @@
   } %>
 <% end %>
 
+<% @sibling_chassis_data&.each do |sibling_data| %>
+  <%= turbo_stream.replace "available_chassis_#{sibling_data[:chassis].id}" do %>
+    <%= render partial: "chassis/available_card", locals: {
+      chassis: sibling_data[:chassis], available_count: sibling_data[:available_count],
+      total_count: sibling_data[:total_count], variants: sibling_data[:variants],
+      event: @event, army_list: @army_list
+    } %>
+  <% end %>
+<% end %>
+
 <%= turbo_stream.update "army_item_count", @army_list.army_list_items.size.to_s %>
 
 <%= turbo_stream.replace "army_list_actions" do %>
