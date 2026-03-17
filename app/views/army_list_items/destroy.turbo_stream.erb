@@ -6,7 +6,7 @@
 <% end %>
 
 <%= turbo_stream.replace "available_chassis_#{@chassis.id}" do %>
-  <%= render partial: "chassis/available_card", locals: {
+  <%= render partial: "chassis/available_chassis", locals: {
     chassis: @chassis, available_count: @available_count, total_count: @total_count,
     variants: @variants, event: @event, army_list: @army_list
   } %>
@@ -14,7 +14,7 @@
 
 <% @sibling_chassis_data&.each do |sibling_data| %>
   <%= turbo_stream.replace "available_chassis_#{sibling_data[:chassis].id}" do %>
-    <%= render partial: "chassis/available_card", locals: {
+    <%= render partial: "chassis/available_chassis", locals: {
       chassis: sibling_data[:chassis], available_count: sibling_data[:available_count],
       total_count: sibling_data[:total_count], variants: sibling_data[:variants],
       event: @event, army_list: @army_list

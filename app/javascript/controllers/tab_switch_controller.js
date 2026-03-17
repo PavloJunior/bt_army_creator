@@ -2,15 +2,22 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["tab", "panel"]
-  static values = { default: { type: String, default: "army" } }
+  static values = {
+    default: { type: String, default: "browser" },
+    key: { type: String, default: "army-builder-tab" }
+  }
 
   connect() {
-    this.showTab(this.defaultValue)
+    const urlTab = new URLSearchParams(window.location.search).get("tab")
+    const saved = sessionStorage.getItem(this.keyValue)
+    this.showTab(urlTab || saved || this.defaultValue)
   }
 
   switch(event) {
     event.preventDefault()
-    this.showTab(event.currentTarget.dataset.tabSwitchNameParam)
+    const name = event.currentTarget.dataset.tabSwitchNameParam
+    sessionStorage.setItem(this.keyValue, name)
+    this.showTab(name)
   }
 
   showTab(name) {

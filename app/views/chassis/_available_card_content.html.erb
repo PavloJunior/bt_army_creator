@@ -1,0 +1,80 @@
+<% disabled = available_count == 0 %>
+<% variants_json = variants.map { |v|
+  {
+    id: v.id,
+    name: v.name,
+    tonnage: v.tonnage,
+    pv: v.send(event.point_value_method) || 0,
+    pv_label: event.point_value_label,
+    role: v.role,
+    technology: v.technology,
+    era: v.era_name,
+    rules_level: v.rules_level,
+    date_introduced: v.date_introduced,
+    bf_move: v.bf_move,
+    bf_size: v.bf_size,
+    bf_damage_short: v.bf_damage_short,
+    bf_damage_medium: v.bf_damage_medium,
+    bf_damage_long: v.bf_damage_long,
+    bf_overheat: v.bf_overheat,
+    bf_armor: v.bf_armor,
+    bf_structure: v.bf_structure,
+    bf_abilities: v.bf_abilities
+  }
+}.index_by { |v| v[:id] }.to_json %>
+
+<div class="bg-hud-bg-panel border border-hud-border rounded p-4 <%= 'opacity-40' if disabled %>"
+     data-controller="variant-preview"
+     data-variant-preview-variants-value="<%= variants_json %>"
+     data-variant-preview-game-system-value="<%= event.game_system %>">
+
+  <div class="flex justify-between items-center gap-2 mb-3">
+    <div class="flex items-baseline gap-1.5 min-w-0 flex-wrap">
+      <span class="font-hud-heading font-semibold text-hud-green"><%= chassis.name %></span>
+      <% if chassis.shared_minis? %>
+        <span class="text-xs px-1.5 py-0.5 rounded bg-hud-amber/10 border border-hud-amber/40 text-hud-amber"
+              title="Dzieli modele z: <%= chassis.sibling_chassis.pluck(:name).join(', ') %>">
+          Wspólne
+        </span>
+      <% end %>
+      <span class="text-xs text-hud-text-muted"><%= chassis.tonnage %>t</span>
+    </div>
+    <% if disabled %>
+      <span class="text-xs px-2 py-0.5 rounded border border-hud-border text-hud-text-muted uppercase whitespace-nowrap shrink-0">
+        Brak dostępnych
+      </span>
+    <% else %>
+      <span class="text-xs px-2 py-0.5 rounded border border-hud-green text-hud-green whitespace-nowrap shrink-0">
+        <%= available_count %> <%= available_count == 1 ? "dostępna" : "dostępne" %>
+      </span>
+    <% end %>
+  </div>
+
+  <% if variants.any? && !disabled %>
+    <%= form_with model: [event, army_list, ArmyListItem.new],
+        class: "flex gap-2 items-end" do |form| %>
+      <%= form.hidden_field :chassis_id, value: chassis.id %>
+      <div class="flex-1">
+        <%= form.select :variant_id,
+            variants.map { |v|
+              pv = v.send(event.point_value_method) || 0
+              ["#{v.name} (#{pv} #{event.point_value_label})", v.id]
+            },
+            { prompt: "Wybierz wariant..." },
+            class: "w-full px-2 py-1.5 text-sm rounded hud-select",
+            data: { variant_preview_target: "select", action: "change->variant-preview#load" } %>
+      </div>
+      <%= form.submit "Dodaj",
+          class: "hud-btn-primary px-3 py-1.5 text-sm rounded cursor-pointer",
+          data: { variant_preview_target: "submit" } %>
+    <% end %>
+  <% elsif variants.empty? && !disabled %>
+    <p class="text-xs text-hud-text-muted italic">Brak wariantów dla obecnych ograniczeń</p>
+  <% end %>
+
+  <div data-variant-preview-target="details"></div>
+
+  <% if event.game_system == "alpha_strike" %>
+    <div data-variant-preview-target="card"></div>
+  <% end %>
+</div>

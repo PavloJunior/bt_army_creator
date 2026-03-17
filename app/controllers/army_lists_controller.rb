@@ -75,7 +75,7 @@ class ArmyListsController < ApplicationController
   def toggle_faction
     if params[:clear_all] == "true"
       @army_list.army_list_factions.destroy_all
-      redirect_to event_army_list_path(@event, @army_list)
+      redirect_to event_army_list_path(@event, @army_list, tab: "browser")
       return
     end
 
@@ -91,7 +91,7 @@ class ArmyListsController < ApplicationController
       @army_list.army_list_factions.create!(faction_mul_id: faction_mul_id)
     end
 
-    redirect_to event_army_list_path(@event, @army_list)
+    redirect_to event_army_list_path(@event, @army_list, tab: "browser")
   end
 
   def clear

@@ -1,0 +1,12 @@
+<div id="available_chassis_<%= chassis.id %>">
+  <div data-view-toggle-target="gridItem" class="hidden">
+    <%= render "chassis/available_card_content",
+        chassis: chassis, available_count: available_count, total_count: total_count,
+        variants: variants, event: event, army_list: army_list %>
+  </div>
+  <div data-view-toggle-target="listItem" class="hidden">
+    <%= render "chassis/available_list_item",
+        chassis: chassis, available_count: available_count, total_count: total_count,
+        variants: variants, event: event, army_list: army_list %>
+  </div>
+</div>

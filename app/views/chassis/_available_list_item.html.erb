@@ -23,23 +23,20 @@
   }
 }.index_by { |v| v[:id] }.to_json %>
 
-<div id="available_chassis_<%= chassis.id %>"
-     class="bg-hud-bg-panel border border-hud-border rounded p-4 <%= 'opacity-40' if disabled %>"
+<div class="bg-hud-bg-panel border border-hud-border rounded px-3 py-2 <%= 'opacity-40' if disabled %>"
      data-controller="variant-preview"
      data-variant-preview-variants-value="<%= variants_json %>"
      data-variant-preview-game-system-value="<%= event.game_system %>">
-
-  <div class="flex justify-between items-center gap-2 mb-3">
-    <div class="flex items-baseline gap-1.5 min-w-0 flex-wrap">
-      <span class="font-hud-heading font-semibold text-hud-green"><%= chassis.name %></span>
+  <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+    <div class="flex items-center gap-1.5 min-w-0">
+      <span class="font-hud-heading font-semibold text-hud-green text-sm truncate"><%= chassis.name %></span>
       <% if chassis.shared_minis? %>
-        <span class="text-xs px-1.5 py-0.5 rounded bg-hud-amber/10 border border-hud-amber/40 text-hud-amber"
-              title="Dzieli modele z: <%= chassis.sibling_chassis.pluck(:name).join(', ') %>">
-          Wspólne
-        </span>
+        <span class="text-[10px] px-1 py-0 rounded bg-hud-amber/10 border border-hud-amber/40 text-hud-amber"
+              title="Dzieli modele z: <%= chassis.sibling_chassis.pluck(:name).join(', ') %>">W</span>
       <% end %>
       <span class="text-xs text-hud-text-muted"><%= chassis.tonnage %>t</span>
     </div>
+
     <% if disabled %>
       <span class="text-xs px-2 py-0.5 rounded border border-hud-border text-hud-text-muted uppercase whitespace-nowrap shrink-0">
         Brak dostępnych
@@ -49,29 +46,28 @@
         <%= available_count %> <%= available_count == 1 ? "dostępna" : "dostępne" %>
       </span>
     <% end %>
-  </div>
 
-  <% if variants.any? && !disabled %>
-    <%= form_with model: [event, army_list, ArmyListItem.new],
-        class: "flex gap-2 items-end" do |form| %>
-      <%= form.hidden_field :chassis_id, value: chassis.id %>
-      <div class="flex-1">
-        <%= form.select :variant_id,
-            variants.map { |v|
-              pv = v.send(event.point_value_method) || 0
-              ["#{v.name} (#{pv} #{event.point_value_label})", v.id]
-            },
-            { prompt: "Wybierz wariant..." },
-            class: "w-full px-2 py-1.5 text-sm rounded hud-select",
-            data: { variant_preview_target: "select", action: "change->variant-preview#load" } %>
+    <% if variants.any? && !disabled %>
+      <div class="flex-1 flex justify-end">
+        <%= form_with model: [event, army_list, ArmyListItem.new],
+            class: "flex gap-1.5 items-center" do |form| %>
+          <%= form.hidden_field :chassis_id, value: chassis.id %>
+          <%= form.select :variant_id,
+              variants.map { |v|
+                pv = v.send(event.point_value_method) || 0
+                ["#{v.name} (#{pv})", v.id]
+              },
+              { prompt: "Wariant..." },
+              class: "px-1.5 py-1 text-xs rounded hud-select w-[200px]",
+              data: { variant_preview_target: "select", action: "change->variant-preview#load" } %>
+          <%= form.submit "Dodaj",
+              class: "hud-btn-primary px-2 py-1 text-xs rounded cursor-pointer whitespace-nowrap" %>
+        <% end %>
       </div>
-      <%= form.submit "Dodaj",
-          class: "hud-btn-primary px-3 py-1.5 text-sm rounded cursor-pointer",
-          data: { variant_preview_target: "submit" } %>
+    <% elsif variants.empty? && !disabled %>
+      <span class="text-[10px] text-hud-text-muted italic ml-auto">Brak wariantów</span>
     <% end %>
-  <% elsif variants.empty? && !disabled %>
-    <p class="text-xs text-hud-text-muted italic">Brak wariantów dla obecnych ograniczeń</p>
-  <% end %>
+  </div>
 
   <div data-variant-preview-target="details"></div>
 

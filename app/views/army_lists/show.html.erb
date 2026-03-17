@@ -67,7 +67,7 @@
     </aside>
 
     <div>
-    <div data-controller="tab-switch" data-tab-switch-default-value="army">
+    <div data-controller="tab-switch" data-tab-switch-default-value="browser">
       <div class="flex border-b border-hud-border mb-0">
         <button class="hud-tab"
                 data-tab-switch-target="tab"
@@ -147,16 +147,31 @@
           </div>
         </div>
 
-        <div id="available_miniatures" class="grid gap-4 md:grid-cols-2 items-start">
-          <% faction_filter = @selected_faction_mul_ids.presence %>
-          <% @chassis_data.each do |chassis, available_count, total_count| %>
-            <% variants = @event.available_variants_for_chassis(chassis, tech_base: @army_list.tech_base, faction_mul_ids: faction_filter) %>
-            <% next if variants.empty? && available_count > 0 %>
-            <%= render partial: "chassis/available_card", locals: {
-              chassis: chassis, available_count: available_count, total_count: total_count,
-              variants: variants, event: @event, army_list: @army_list
-            } %>
-          <% end %>
+        <div data-controller="view-toggle">
+          <div class="flex justify-end mb-3 gap-1">
+            <button class="hud-tab text-xs px-2 py-1"
+                    data-view-toggle-target="listButton"
+                    data-action="view-toggle#list">
+              &#9776; Lista
+            </button>
+            <button class="hud-tab text-xs px-2 py-1"
+                    data-view-toggle-target="gridButton"
+                    data-action="view-toggle#grid">
+              &#8862; Siatka
+            </button>
+          </div>
+
+          <div id="available_miniatures" data-view-toggle-target="container" class="items-start">
+            <% faction_filter = @selected_faction_mul_ids.presence %>
+            <% @chassis_data.each do |chassis, available_count, total_count| %>
+              <% variants = @event.available_variants_for_chassis(chassis, tech_base: @army_list.tech_base, faction_mul_ids: faction_filter) %>
+              <% next if variants.empty? && available_count > 0 %>
+              <%= render partial: "chassis/available_chassis", locals: {
+                chassis: chassis, available_count: available_count, total_count: total_count,
+                variants: variants, event: @event, army_list: @army_list
+              } %>
+            <% end %>
+          </div>
         </div>
 
         <% if @chassis_data.empty? %>
