@@ -1,4 +1,6 @@
-<div id="available_chassis_<%= chassis.id %>">
+<div id="available_chassis_<%= chassis.id %>"
+     data-unit-type="<%= chassis.unit_type %>"
+     data-unit-type-filter-target="item">
   <div data-view-toggle-target="gridItem" class="hidden">
     <%= render "chassis/available_card_content",
         chassis: chassis, available_count: available_count, total_count: total_count,

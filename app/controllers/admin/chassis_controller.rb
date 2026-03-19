@@ -76,19 +76,22 @@ module Admin
 
       variants_data = MulClient.fetch_variants(search_term)
       chassis_groups = variants_data
-        .group_by { |v| v["Class"] }
-        .reject { |name, _| name.blank? }
+        .reject { |v| v["Class"].blank? }
+        .group_by { |v| [ v["Class"], v.dig("Type", "Name") ] }
 
       if chassis_groups.empty?
         redirect_to new_admin_chassis_path, alert: "No chassis found for '#{search_term}'."
         return
       end
 
-      existing_names = Chassis.where(name: chassis_groups.keys).pluck(:name).to_set
-      new_groups = chassis_groups.reject { |name, _| existing_names.include?(name) }
+      existing_pairs = Chassis.where(name: chassis_groups.keys.map(&:first).uniq)
+        .pluck(:name, :unit_type)
+        .to_set
+      new_groups = chassis_groups.reject { |(name, unit_type), _| existing_pairs.include?([ name, unit_type ]) }
 
       if new_groups.size == 1
-        chassis = Chassis.create!(name: new_groups.keys.first)
+        name, unit_type = new_groups.keys.first
+        chassis = Chassis.create!(name: name, unit_type: unit_type)
         create_miniatures(chassis, params[:miniature_count])
         SyncChassisJob.perform_later(chassis.id)
         redirect_to admin_chassis_index_path, notice: "#{chassis.name} added. Syncing variants from MUL..."
@@ -96,17 +99,17 @@ module Admin
       end
 
       @search_term = search_term
-      @existing_names = existing_names
-      @chassis_groups = chassis_groups.map do |name, variants|
+      @existing_pairs = existing_pairs
+      @chassis_groups = chassis_groups.map do |(name, unit_type), variants|
         first = variants.first
         {
           name: name,
-          unit_type: first.dig("Type", "Name"),
+          unit_type: unit_type,
           tonnage: first["Tonnage"]&.to_i,
           variant_count: variants.size,
           image_url: first["ImageUrl"]
         }
-      end.sort_by { |g| g[:name] }
+      end.sort_by { |g| [ g[:name], g[:unit_type].to_s ] }
 
       render :search_results
     rescue MulClient::ApiError => e
@@ -114,8 +117,8 @@ module Admin
     end
 
     def batch_create
-      names = Array(params[:chassis_names]).reject(&:blank?)
-      if names.empty?
+      entries = Array(params[:chassis_entries]).reject(&:blank?).map { |e| e.split("||", 2) }
+      if entries.empty?
         redirect_to new_admin_chassis_path, alert: "No chassis selected."
         return
       end
@@ -126,9 +129,9 @@ module Admin
 
       created = []
       Chassis.transaction do
-        names.each do |name|
-          next if Chassis.exists?(name: name)
-          chassis = Chassis.create!(name: name, mini_group_id: group_id)
+        entries.each do |name, unit_type|
+          next if Chassis.exists?(name: name, unit_type: unit_type)
+          chassis = Chassis.create!(name: name, unit_type: unit_type, mini_group_id: group_id)
           create_miniatures(chassis, mini_count) unless shared
           created << chassis
         end
@@ -188,7 +191,7 @@ module Admin
     end
 
     def chassis_params
-      params.require(:chassis).permit(:name)
+      params.require(:chassis).permit(:name, :unit_type)
     end
 
     def create_miniatures(chassis, count)

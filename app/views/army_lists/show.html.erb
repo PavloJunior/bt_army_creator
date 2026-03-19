@@ -112,61 +112,106 @@
       </div>
 
       <%# Browser Panel %>
-      <div data-tab-switch-target="panel" data-tab-name="browser" class="hidden pt-4">
+      <div data-tab-switch-target="panel" data-tab-name="browser" class="hidden pt-4"
+           data-controller="unit-type-filter">
         <%# Mobile faction filter %>
         <div class="lg:hidden mb-4">
-          <div class="bg-hud-bg-panel border border-hud-border rounded p-3">
-            <h3 class="text-xs text-hud-text-muted uppercase tracking-wider mb-2 font-hud-heading">Podfrakcja</h3>
-            <div class="flex flex-wrap gap-1.5">
-              <% @sidebar_factions.each do |_category, factions| %>
-                <% factions.each do |faction| %>
-                  <% selected = @selected_faction_mul_ids.include?(faction.mul_id) %>
-                  <%= form_with url: toggle_faction_event_army_list_path(@event, @army_list),
-                      method: :patch,
-                      class: "inline",
-                      data: { turbo: false,
-                              controller: "faction-toggle",
-                              faction_toggle_has_conflicts_value: false } do |f| %>
-                    <%= f.hidden_field :faction_mul_id, value: faction.mul_id %>
-                    <button type="submit"
-                            data-action="faction-toggle#toggle"
-                            class="px-2 py-0.5 text-xs rounded transition cursor-pointer
-                                   <%= if selected
-                                         'text-hud-green bg-hud-green/10 border border-hud-green/40'
-                                       else
-                                         'text-hud-text-dim hover:text-hud-green border border-hud-border'
-                                       end %>">
-                      <%= faction.name %>
-                    </button>
+          <div class="bg-hud-bg-panel border border-hud-border rounded p-3 space-y-3">
+            <div>
+              <h3 class="text-xs text-hud-text-muted uppercase tracking-wider mb-2 font-hud-heading">Podfrakcja</h3>
+              <div class="flex flex-wrap gap-1.5">
+                <% @sidebar_factions.each do |_category, factions| %>
+                  <% factions.each do |faction| %>
+                    <% selected = @selected_faction_mul_ids.include?(faction.mul_id) %>
+                    <%= form_with url: toggle_faction_event_army_list_path(@event, @army_list),
+                        method: :patch,
+                        class: "inline",
+                        data: { turbo: false,
+                                controller: "faction-toggle",
+                                faction_toggle_has_conflicts_value: false } do |f| %>
+                      <%= f.hidden_field :faction_mul_id, value: faction.mul_id %>
+                      <button type="submit"
+                              data-action="faction-toggle#toggle"
+                              class="px-2 py-0.5 text-xs rounded transition cursor-pointer
+                                     <%= if selected
+                                           'text-hud-green bg-hud-green/10 border border-hud-green/40'
+                                         else
+                                           'text-hud-text-dim hover:text-hud-green border border-hud-border'
+                                         end %>">
+                        <%= faction.name %>
+                      </button>
+                    <% end %>
                   <% end %>
                 <% end %>
-              <% end %>
-              <% if @selected_faction_mul_ids.any? %>
-                <%= button_to toggle_faction_event_army_list_path(@event, @army_list),
-                    method: :patch,
-                    params: { clear_all: "true" },
-                    class: "px-2 py-0.5 text-xs rounded transition cursor-pointer
-                           text-hud-amber hover:text-hud-amber border border-hud-amber/40",
-                    form: { data: { turbo: false } } do %>
-                  Wyczyść
+                <% if @selected_faction_mul_ids.any? %>
+                  <%= button_to toggle_faction_event_army_list_path(@event, @army_list),
+                      method: :patch,
+                      params: { clear_all: "true" },
+                      class: "px-2 py-0.5 text-xs rounded transition cursor-pointer
+                             text-hud-amber hover:text-hud-amber border border-hud-amber/40",
+                      form: { data: { turbo: false } } do %>
+                    Wyczyść
+                  <% end %>
                 <% end %>
-              <% end %>
+              </div>
             </div>
+            <% if @available_unit_types.size > 1 %>
+              <div>
+                <h3 class="text-xs text-hud-text-muted uppercase tracking-wider mb-2 font-hud-heading">Typ jednostki</h3>
+                <div class="flex flex-wrap gap-1.5">
+                  <button class="hud-filter-btn px-2 py-0.5 text-xs rounded cursor-pointer border"
+                          data-unit-type-filter-target="button"
+                          data-unit-type="all"
+                          data-action="unit-type-filter#filter">
+                    Wszystkie
+                  </button>
+                  <% @available_unit_types.each do |unit_type| %>
+                    <button class="hud-filter-btn px-2 py-0.5 text-xs rounded cursor-pointer border"
+                            data-unit-type-filter-target="button"
+                            data-unit-type="<%= unit_type %>"
+                            data-action="unit-type-filter#filter">
+                      <%= unit_type %>
+                    </button>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
           </div>
         </div>
 
         <div data-controller="view-toggle">
-          <div class="flex justify-end mb-3 gap-1">
-            <button class="hud-tab text-xs px-2 py-1"
-                    data-view-toggle-target="listButton"
-                    data-action="view-toggle#list">
-              &#9776; Lista
-            </button>
-            <button class="hud-tab text-xs px-2 py-1"
-                    data-view-toggle-target="gridButton"
-                    data-action="view-toggle#grid">
-              &#8862; Siatka
-            </button>
+          <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
+            <% if @available_unit_types.size > 1 %>
+              <div class="hidden lg:flex flex-wrap gap-1">
+                <button class="hud-filter-btn text-xs px-2 py-1 rounded cursor-pointer border"
+                        data-unit-type-filter-target="button"
+                        data-unit-type="all"
+                        data-action="unit-type-filter#filter">
+                  Wszystkie
+                </button>
+                <% @available_unit_types.each do |unit_type| %>
+                  <button class="hud-filter-btn text-xs px-2 py-1 rounded cursor-pointer border"
+                          data-unit-type-filter-target="button"
+                          data-unit-type="<%= unit_type %>"
+                          data-action="unit-type-filter#filter">
+                    <%= unit_type %>
+                  </button>
+                <% end %>
+              </div>
+            <% end %>
+
+            <div class="flex gap-1 ml-auto">
+              <button class="hud-filter-btn text-xs px-2 py-1 rounded cursor-pointer border"
+                      data-view-toggle-target="listButton"
+                      data-action="view-toggle#list">
+                &#9776; Lista
+              </button>
+              <button class="hud-filter-btn text-xs px-2 py-1 rounded cursor-pointer border"
+                      data-view-toggle-target="gridButton"
+                      data-action="view-toggle#grid">
+                &#8862; Siatka
+              </button>
+            </div>
           </div>
 
           <div id="available_miniatures" data-view-toggle-target="container" class="items-start">

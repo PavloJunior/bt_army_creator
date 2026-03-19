@@ -10,13 +10,15 @@ class Admin::ChassisControllerTest < ActionDispatch::IntegrationTest
   test "batch_create creates multiple chassis independently" do
     assert_difference "Chassis.count", 2 do
       post batch_create_admin_chassis_index_path, params: {
-        chassis_names: [ "Test Mech A", "Test Mech B" ],
+        chassis_entries: [ "Test Mech A||BattleMech", "Test Mech B||Vehicle" ],
         miniature_count: 2
       }
     end
 
     a = Chassis.find_by(name: "Test Mech A")
     b = Chassis.find_by(name: "Test Mech B")
+    assert_equal "BattleMech", a.unit_type
+    assert_equal "Vehicle", b.unit_type
     assert_nil a.mini_group_id
     assert_nil b.mini_group_id
     assert_equal 2, a.miniatures.count
@@ -27,7 +29,7 @@ class Admin::ChassisControllerTest < ActionDispatch::IntegrationTest
   test "batch_create creates shared group with mini_group_id" do
     assert_difference "Chassis.count", 2 do
       post batch_create_admin_chassis_index_path, params: {
-        chassis_names: [ "Shared A", "Shared B" ],
+        chassis_entries: [ "Shared A||BattleMech", "Shared B||BattleMech" ],
         miniature_count: 3,
         shared: "true"
       }
@@ -41,7 +43,7 @@ class Admin::ChassisControllerTest < ActionDispatch::IntegrationTest
 
   test "batch_create creates miniatures on first chassis only for shared" do
     post batch_create_admin_chassis_index_path, params: {
-      chassis_names: [ "Pool A", "Pool B" ],
+      chassis_entries: [ "Pool A||BattleMech", "Pool B||BattleMech" ],
       miniature_count: 3,
       shared: "true"
     }
@@ -57,15 +59,15 @@ class Admin::ChassisControllerTest < ActionDispatch::IntegrationTest
   test "batch_create skips already existing chassis" do
     assert_difference "Chassis.count", 0 do
       post batch_create_admin_chassis_index_path, params: {
-        chassis_names: [ "Atlas" ],
+        chassis_entries: [ "Atlas||BattleMech" ],
         miniature_count: 1
       }
     end
     assert_redirected_to admin_chassis_index_path
   end
 
-  test "batch_create with empty names redirects with alert" do
-    post batch_create_admin_chassis_index_path, params: { chassis_names: [ "" ] }
+  test "batch_create with empty entries redirects with alert" do
+    post batch_create_admin_chassis_index_path, params: { chassis_entries: [ "" ] }
     assert_redirected_to new_admin_chassis_path
   end
 
@@ -140,5 +142,13 @@ class Admin::ChassisControllerTest < ActionDispatch::IntegrationTest
     ppc.reload
     assert_nil gauss.mini_group_id
     assert_nil ppc.mini_group_id
+  end
+
+  test "update changes unit_type" do
+    atlas = chassis(:atlas)
+    patch admin_chassis_path(atlas), params: { chassis: { unit_type: "IndustrialMech" } }
+    assert_redirected_to admin_chassis_index_path
+    atlas.reload
+    assert_equal "IndustrialMech", atlas.unit_type
   end
 end

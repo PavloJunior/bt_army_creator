@@ -39,6 +39,9 @@ class SyncChassisJob < ApplicationJob
   def sync_variants(chassis)
     variants_data = MulClient.fetch_variants(chassis.name)
     variants_data = variants_data.select { |data| data["Class"]&.casecmp(chassis.name)&.zero? }
+    if chassis.unit_type.present?
+      variants_data = variants_data.select { |data| data.dig("Type", "Name") == chassis.unit_type }
+    end
 
     ApplicationRecord.transaction do
       variants_data.each do |data|

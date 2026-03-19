@@ -55,4 +55,22 @@ class ChassisTest < ActiveSupport::TestCase
     lone = Chassis.create!(name: "Lone Wolf", mini_group_id: "orphan-group")
     assert_not lone.shared_minis?
   end
+
+  test "UNIT_TYPES includes known BattleTech unit types" do
+    assert_includes Chassis::UNIT_TYPES, "BattleMech"
+    assert_includes Chassis::UNIT_TYPES, "Vehicle"
+    assert_includes Chassis::UNIT_TYPES, "VTOL"
+    assert_includes Chassis::UNIT_TYPES, "ProtoMech"
+    assert_includes Chassis::UNIT_TYPES, "BattleArmor"
+    assert Chassis::UNIT_TYPES.frozen?
+  end
+
+  test "available_unit_types returns distinct non-nil types sorted" do
+    types = Chassis.available_unit_types
+    assert_includes types, "BattleMech"
+    assert_includes types, "Vehicle"
+    assert_equal types, types.sort
+    assert_not_includes types, nil
+    assert_not_includes types, ""
+  end
 end

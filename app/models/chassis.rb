@@ -1,9 +1,31 @@
 class Chassis < ApplicationRecord
+  UNIT_TYPES = [
+    "BattleMech",
+    "IndustrialMech",
+    "Vehicle",
+    "VTOL",
+    "Support Vehicle",
+    "Large Support Vehicle",
+    "Conventional Fighter",
+    "AeroSpace Fighter",
+    "ProtoMech",
+    "BattleArmor",
+    "Infantry",
+    "DropShip",
+    "WarShip",
+    "JumpShip",
+    "Space Station"
+  ].freeze
+
   has_many :variants, dependent: :destroy
   has_many :miniatures, dependent: :restrict_with_error
   has_many :sync_attempts, dependent: :destroy
 
   validates :name, presence: true, uniqueness: true
+
+  def self.available_unit_types
+    where.not(unit_type: [ nil, "" ]).distinct.pluck(:unit_type).sort
+  end
 
   def sibling_chassis
     return Chassis.none if mini_group_id.blank?

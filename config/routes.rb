@@ -36,6 +36,8 @@ Rails.application.routes.draw do
       resources :army_lists, only: [ :index, :show, :destroy ] do
         member do
           patch :unlock
+          patch :deactivate
+          patch :reactivate
         end
       end
     end

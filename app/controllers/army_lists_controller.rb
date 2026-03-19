@@ -41,6 +41,8 @@ class ArmyListsController < ApplicationController
       [ chassis, available.size, pool.size ]
     end
 
+    @available_unit_types = all_chassis.where.not(unit_type: [ nil, "" ]).distinct.pluck(:unit_type).sort
+
     @is_owner = owner_of_army_list?(@army_list) || admin_signed_in?
     @sidebar_factions = Faction.for_sidebar(@army_list.tech_base)
     @selected_faction_mul_ids = @army_list.army_list_factions.pluck(:faction_mul_id)

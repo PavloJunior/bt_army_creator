@@ -17,6 +17,15 @@
     <p class="mt-1 text-sm text-hud-text-muted">Enter the chassis name exactly as it appears on masterunitlist.info</p>
   </div>
 
+  <div>
+    <%= form.label :unit_type, "Unit Type", class: "block text-sm font-medium text-hud-text-dim mb-1" %>
+    <%= form.select :unit_type,
+        options_for_select(Chassis::UNIT_TYPES, chassis.unit_type),
+        { include_blank: "— Select unit type —" },
+        class: "w-full px-3 py-2 hud-input rounded" %>
+    <p class="mt-1 text-sm text-hud-text-muted">Usually set automatically during MUL sync</p>
+  </div>
+
   <div class="flex gap-3">
     <%= form.submit class: "px-4 py-2 hud-btn-primary rounded cursor-pointer" %>
     <%= link_to "Cancel", admin_chassis_index_path,

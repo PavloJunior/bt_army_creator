@@ -249,6 +249,22 @@
   background: rgba(0, 255, 65, 0.03);
 }
 
+/* === Filter Pill Buttons (mobile unit type filter) === */
+
+.hud-filter-btn {
+  color: var(--color-hud-text-dim);
+  border-color: var(--color-hud-border);
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+}
+.hud-filter-btn.active {
+  color: var(--color-hud-green);
+  background: rgba(0, 255, 65, 0.1);
+  border-color: rgba(0, 255, 65, 0.4);
+}
+.hud-filter-btn:hover:not(.active) {
+  color: var(--color-hud-green);
+}
+
 /* === HUD Scrollbar (global) === */
 
 *,

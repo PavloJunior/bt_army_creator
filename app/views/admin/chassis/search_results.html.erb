@@ -12,8 +12,8 @@
     <% @chassis_groups.each do |group| %>
       <div class="bg-hud-bg-panel border border-hud-border rounded p-4 flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <% unless @existing_names.include?(group[:name]) %>
-            <input type="checkbox" name="chassis_names[]" value="<%= group[:name] %>"
+          <% unless @existing_pairs.include?([group[:name], group[:unit_type]]) %>
+            <input type="checkbox" name="chassis_entries[]" value="<%= "#{group[:name]}||#{group[:unit_type]}" %>"
                    class="w-5 h-5 rounded border-hud-border text-hud-green accent-hud-green cursor-pointer"
                    data-batch-select-target="checkbox"
                    data-action="change->batch-select#toggle">
@@ -33,7 +33,7 @@
         </div>
 
         <div>
-          <% if @existing_names.include?(group[:name]) %>
+          <% if @existing_pairs.include?([group[:name], group[:unit_type]]) %>
             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-hud-bg border border-hud-border text-hud-text-muted">
               Already added
             </span>

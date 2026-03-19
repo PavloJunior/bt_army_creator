@@ -76,6 +76,16 @@
         <div class="flex gap-2">
           <%= link_to "View", admin_event_army_list_path(@event, list),
               class: "text-hud-green hover:text-hud-green-dim text-sm" %>
+          <% if list.submitted? %>
+            <%= button_to "Deactivate", deactivate_admin_event_army_list_path(@event, list),
+                method: :patch, class: "text-hud-amber hover:text-hud-amber-dim text-sm",
+                data: { turbo_confirm: "Deactivate this list? Miniatures will be released." } %>
+          <% end %>
+          <% if list.inactive? %>
+            <%= button_to "Reactivate", reactivate_admin_event_army_list_path(@event, list),
+                method: :patch, class: "text-hud-green hover:text-hud-green-dim text-sm",
+                data: { turbo_confirm: "Reactivate this list? Miniatures will be locked again." } %>
+          <% end %>
           <% if list.submitted? || list.inactive? %>
             <%= button_to "Unlock", unlock_admin_event_army_list_path(@event, list),
                 method: :patch, class: "text-hud-amber hover:text-hud-amber-dim text-sm",
