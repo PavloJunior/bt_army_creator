@@ -243,14 +243,16 @@
                          data-action="input->chassis-browser#filter"
                          class="w-20 px-2 py-1 text-xs rounded hud-select"
                          placeholder="—">
-                  <label class="flex items-center gap-1.5 text-xs text-hud-text-dim cursor-pointer whitespace-nowrap">
+                  <label class="flex items-center gap-1.5 text-xs text-hud-text-dim cursor-pointer whitespace-nowrap"
+                         title="Automatycznie ustaw limit na liczbę punktów, które pozostały do wydania">
                     <input type="checkbox"
                            data-chassis-browser-target="autoCheckbox"
                            data-action="change->chassis-browser#toggleAuto"
                            class="hud-checkbox rounded">
-                    Auto
+                    Tylko dostępne opcje wg. budżetu
                   </label>
-                  <button class="text-base leading-none text-hud-text-muted hover:text-hud-amber cursor-pointer px-1"
+                  <button class="hidden text-base leading-none text-hud-text-muted hover:text-hud-amber cursor-pointer px-1"
+                          data-chassis-browser-target="resetButton"
                           data-action="chassis-browser#resetMaxPv"
                           title="Wyczyść filtr PV">&#10005;</button>
                 </div>

@@ -11,7 +11,8 @@ export default class extends Controller {
     "panel",
     "toggleButton",
     "badge",
-    "emptyState"
+    "emptyState",
+    "resetButton"
   ]
 
   static values = {
@@ -219,6 +220,7 @@ export default class extends Controller {
 
     this.updateBadge()
     this.updateEmptyState(visibleCount)
+    this.updateResetButtonVisibility()
   }
 
   filterVariantDropdowns(item, matchingVariants, hasFilters) {
@@ -307,6 +309,12 @@ export default class extends Controller {
     this.storeRemove("max-pv")
     this.storeSet("auto-pv", "false")
     this.filter()
+  }
+
+  updateResetButtonVisibility() {
+    if (!this.hasResetButtonTarget) return
+    const active = this.autoCheckboxTarget.checked || this.maxPvInputTarget.value !== ""
+    this.resetButtonTarget.classList.toggle("hidden", !active)
   }
 
   toggleAuto() {
