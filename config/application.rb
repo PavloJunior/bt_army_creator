@@ -25,6 +25,6 @@ module BtArmyCreator
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.i18n.default_locale = :pl
-    config.i18n.available_locales = [:pl]
+    config.i18n.available_locales = [ :pl ]
   end
 end

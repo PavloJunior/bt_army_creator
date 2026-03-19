@@ -12,8 +12,12 @@
       <%= @army_list.total_points %> / <%= @event.point_cap %> <%= @event.point_value_label %>
     </p>
   </div>
-  <span class="hud-stamp <%= @army_list.submitted? ? 'hud-stamp-green' : 'hud-stamp-amber' %>">
-    <%= { "draft" => "Draft", "submitted" => "Submitted" }[@army_list.status] %>
+  <span class="hud-stamp <%= case @army_list.status
+        when 'submitted' then 'hud-stamp-green'
+        when 'inactive' then 'hud-stamp-muted'
+        else 'hud-stamp-amber'
+        end %>">
+    <%= { "draft" => "Draft", "submitted" => "Submitted", "inactive" => "Inactive" }[@army_list.status] %>
   </span>
 </div>
 

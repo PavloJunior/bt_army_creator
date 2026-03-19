@@ -4,6 +4,7 @@ class ArmyListItemsController < ApplicationController
   before_action :set_event
   before_action :set_army_list
   before_action :authorize_army_list!
+  before_action :require_draft_status!
 
   def create
     permitted = army_list_item_params
@@ -141,5 +142,12 @@ class ArmyListItemsController < ApplicationController
 
   def skill_params
     params.require(:army_list_item).permit(:skill)
+  end
+
+  def require_draft_status!
+    unless @army_list.draft?
+      redirect_to event_army_list_path(@event, @army_list),
+                  alert: "Nie można modyfikować zgłoszonej lub nieaktywnej listy."
+    end
   end
 end

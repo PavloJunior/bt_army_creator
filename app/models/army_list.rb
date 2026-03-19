@@ -11,7 +11,7 @@ class ArmyList < ApplicationRecord
   has_many :miniature_locks, dependent: :destroy
 
   validates :player_name, presence: true
-  validates :status, inclusion: { in: %w[draft submitted] }
+  validates :status, inclusion: { in: %w[draft submitted inactive] }
   validates :tech_base, presence: true, inclusion: { in: TECH_BASES }
 
   def selected_faction_mul_ids
@@ -43,6 +43,10 @@ class ArmyList < ApplicationRecord
 
   def draft?
     status == "draft"
+  end
+
+  def inactive?
+    status == "inactive"
   end
 
   def all_cards_ready?
@@ -95,6 +99,41 @@ class ArmyList < ApplicationRecord
     end
 
     broadcast_unlock_updates
+  end
+
+  def deactivate!
+    transaction do
+      miniature_locks.destroy_all
+      update!(status: "inactive")
+    end
+
+    broadcast_lock_updates
+  end
+
+  def reactivate!
+    items = army_list_items.includes(:miniature)
+    locked = items.select { |item| item.miniature.locked_for_event?(event) }
+
+    if locked.any?
+      names = locked.map { |item| item.miniature.chassis.name }.uniq.join(", ")
+      raise LockConflictError, "Następujące modele nie są już dostępne: #{names}"
+    end
+
+    transaction do
+      items.each do |item|
+        MiniatureLock.create!(
+          miniature: item.miniature,
+          event: event,
+          army_list: self
+        )
+      end
+      update!(status: "submitted", submitted_at: Time.current)
+    end
+
+    prefetch_missing_cards
+    broadcast_lock_updates
+  rescue ActiveRecord::RecordNotUnique
+    raise LockConflictError, "Jedna lub więcej miniatur została właśnie zajęta przez innego gracza. Sprawdź swoją listę."
   end
 
   private

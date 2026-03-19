@@ -3,3 +3,17 @@ draft_list:
   player_name: Test Player
   status: draft
   tech_base: mixed
+
+submitted_list:
+  event: upcoming_event
+  player_name: Submitted Player
+  status: submitted
+  submitted_at: 2026-03-10 12:00:00
+  tech_base: mixed
+
+inactive_list:
+  event: upcoming_event
+  player_name: Inactive Player
+  status: inactive
+  submitted_at: 2026-03-10 12:00:00
+  tech_base: mixed

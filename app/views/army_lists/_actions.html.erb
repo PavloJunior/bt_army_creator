@@ -27,4 +27,38 @@
           data: { action: "click->confirm-modal#show" } %>
     </div>
   <% end %>
+
+  <% if is_owner && army_list.submitted? %>
+    <div class="mt-6 flex gap-3">
+      <%= button_to "Dezaktywuj listę",
+          deactivate_event_army_list_path(event, army_list),
+          method: :patch,
+          class: "py-3 px-6 hud-btn-amber rounded text-sm cursor-pointer",
+          form: { data: {
+            controller: "confirm-modal",
+            confirm_modal_title_value: "Dezaktywuj listę",
+            confirm_modal_message_value: "Dezaktywować tę listę? Twoje modele zostaną <span class='text-hud-amber'>zwolnione</span> i mogą zostać zajęte przez innych.",
+            confirm_modal_confirm_value: "Dezaktywuj",
+            confirm_modal_cancel_value: "Anuluj"
+          } },
+          data: { action: "click->confirm-modal#show" } %>
+    </div>
+  <% end %>
+
+  <% if is_owner && army_list.inactive? %>
+    <div class="mt-6 flex gap-3">
+      <%= button_to "Reaktywuj listę",
+          reactivate_event_army_list_path(event, army_list),
+          method: :patch,
+          class: "flex-1 py-3 px-6 hud-btn-primary rounded text-sm cursor-pointer",
+          form: { data: {
+            controller: "confirm-modal",
+            confirm_modal_title_value: "Reaktywuj listę",
+            confirm_modal_message_value: "Reaktywować tę listę? Twoje modele zostaną ponownie <span class='text-hud-amber'>zarezerwowane</span>.",
+            confirm_modal_confirm_value: "Reaktywuj",
+            confirm_modal_cancel_value: "Anuluj"
+          } },
+          data: { action: "click->confirm-modal#show" } %>
+    </div>
+  <% end %>
 </div>

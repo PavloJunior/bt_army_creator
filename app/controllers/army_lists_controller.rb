@@ -2,8 +2,9 @@ class ArmyListsController < ApplicationController
   include ArmyListOwnership
 
   before_action :set_event
-  before_action :set_army_list, only: [ :show, :edit, :update, :submit, :change_tech_base, :toggle_faction, :clear, :print_cards, :print_cards_ready ]
-  before_action :authorize_army_list!, only: [ :edit, :update, :submit, :change_tech_base, :toggle_faction, :clear ]
+  before_action :set_army_list, only: [ :show, :edit, :update, :submit, :deactivate, :reactivate, :change_tech_base, :toggle_faction, :clear, :print_cards, :print_cards_ready ]
+  before_action :authorize_army_list!, only: [ :edit, :update, :submit, :deactivate, :reactivate, :change_tech_base, :toggle_faction, :clear ]
+  before_action :require_active_event!, only: [ :submit, :deactivate, :reactivate ]
 
   def new
     @army_list = @event.army_lists.build
@@ -73,6 +74,11 @@ class ArmyListsController < ApplicationController
   end
 
   def toggle_faction
+    unless @army_list.draft?
+      redirect_to event_army_list_path(@event, @army_list)
+      return
+    end
+
     if params[:clear_all] == "true"
       @army_list.army_list_factions.destroy_all
       redirect_to event_army_list_path(@event, @army_list, tab: "browser")
@@ -128,6 +134,28 @@ class ArmyListsController < ApplicationController
     redirect_to event_army_list_path(@event, @army_list), alert: e.message
   end
 
+  def deactivate
+    if @army_list.submitted?
+      @army_list.deactivate!
+      redirect_to event_army_list_path(@event, @army_list),
+                  notice: "Lista dezaktywowana. Twoje modele zostały zwolnione."
+    else
+      redirect_to event_army_list_path(@event, @army_list)
+    end
+  end
+
+  def reactivate
+    if @army_list.inactive?
+      @army_list.reactivate!
+      redirect_to event_army_list_path(@event, @army_list),
+                  notice: "Lista reaktywowana! Twoje modele zostały ponownie zarezerwowane."
+    else
+      redirect_to event_army_list_path(@event, @army_list)
+    end
+  rescue ArmyList::LockConflictError => e
+    redirect_to event_army_list_path(@event, @army_list), alert: e.message
+  end
+
   private
 
   def set_event
@@ -145,6 +173,13 @@ class ArmyListsController < ApplicationController
     @army_list.army_list_items.includes(variant: :variant_factions).each do |item|
       item_faction_ids = item.variant.variant_factions.pluck(:faction_id)
       item.destroy! unless (item_faction_ids & remaining_faction_ids).any?
+    end
+  end
+
+  def require_active_event!
+    if @event.status == "completed"
+      redirect_to event_army_list_path(@event, @army_list),
+                  alert: "Nie można zmieniać statusu listy dla zakończonej bitwy."
     end
   end
 

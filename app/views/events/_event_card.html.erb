@@ -14,6 +14,12 @@
     <div><span class="text-hud-text-muted">Limit:</span> <span class="text-hud-text-dim"><%= event.point_cap %> <%= event.point_value_label %></span></div>
     <div><span class="text-hud-text-muted">Listy:</span> <span class="text-hud-text-dim"><%= event.army_lists.where(status: "submitted").count %> zgłoszonych</span></div>
   </div>
+  <% if local_assigns[:has_draft] && has_draft %>
+    <p class="mt-2 text-xs text-hud-amber flex items-center gap-1">
+      <span class="inline-block w-1.5 h-1.5 bg-hud-amber rounded-full animate-pulse"></span>
+      Masz wersję roboczą
+    </p>
+  <% end %>
   <% if event.event_era_restrictions.any? %>
     <p class="mt-2 text-xs text-hud-text-muted">
       Ery: <%= event.event_era_restrictions.map(&:era_name).join(", ") %>

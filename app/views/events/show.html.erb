@@ -46,6 +46,57 @@
     <% end %>
   </div>
 
+  <% if @my_drafts.any? %>
+    <div class="mb-6">
+      <h2 class="font-hud-heading text-lg font-semibold text-hud-amber mb-3 uppercase tracking-wider flex items-center gap-2">
+        <span class="inline-block w-2 h-2 bg-hud-amber rounded-full animate-pulse"></span>
+        Twoje wersje robocze
+      </h2>
+      <div class="space-y-2">
+        <% @my_drafts.each do |draft| %>
+          <%= link_to event_army_list_path(@event, draft),
+              class: "block bg-hud-bg-panel border border-hud-amber/40 rounded p-4 hover:border-hud-amber hover:bg-hud-bg-panel-hover transition no-underline hud-accent-amber" do %>
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="font-medium text-hud-amber"><%= draft.player_name %></span>
+                <span class="text-sm text-hud-text-dim ml-2">
+                  <%= draft.army_list_items.size %> jednostek &middot;
+                  <%= draft.total_points %> / <%= @event.point_cap %> <%= @event.point_value_label %>
+                </span>
+              </div>
+              <span class="hud-stamp hud-stamp-amber">Wersja robocza</span>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @my_inactive.any? %>
+    <div class="mb-6">
+      <h2 class="font-hud-heading text-lg font-semibold text-hud-text-muted mb-3 uppercase tracking-wider">
+        Twoje nieaktywne listy
+      </h2>
+      <div class="space-y-2">
+        <% @my_inactive.each do |list| %>
+          <%= link_to event_army_list_path(@event, list),
+              class: "block bg-hud-bg-panel border border-hud-border rounded p-4 hover:border-hud-border-bright hover:bg-hud-bg-panel-hover transition no-underline" do %>
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="font-medium text-hud-text-muted"><%= list.player_name %></span>
+                <span class="text-sm text-hud-text-dim ml-2">
+                  <%= list.army_list_items.size %> jednostek &middot;
+                  <%= list.total_points %> / <%= @event.point_cap %> <%= @event.point_value_label %>
+                </span>
+              </div>
+              <span class="hud-stamp hud-stamp-muted">Nieaktywna</span>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <% if @event.status != "completed" %>
     <div class="mb-6">
       <%= link_to new_event_army_list_path(@event),

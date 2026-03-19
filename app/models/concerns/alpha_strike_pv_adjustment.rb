@@ -23,7 +23,7 @@ module AlphaStrikePvAdjustment
     if skill < 4
       base_pv + (4 - skill) * increase_per_rating(base_pv)
     else
-      [base_pv - (skill - 4) * decrease_per_rating(base_pv), 1].max
+      [ base_pv - (skill - 4) * decrease_per_rating(base_pv), 1 ].max
     end
   end
 

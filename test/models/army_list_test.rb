@@ -94,7 +94,7 @@ class ArmyListTest < ActiveSupport::TestCase
       skill: 3
     )
 
-    assert_enqueued_with(job: FetchVariantCardJob, args: [variants(:atlas_d).id, { skill: 3 }]) do
+    assert_enqueued_with(job: FetchVariantCardJob, args: [ variants(:atlas_d).id, { skill: 3 } ]) do
       list.submit!
     end
   end
@@ -126,5 +126,88 @@ class ArmyListTest < ActiveSupport::TestCase
 
     # Fixture atlas_d_skill4 exists but has no image attached
     assert_equal 1, list.pending_cards_count
+  end
+
+  test "inactive? returns true for inactive status" do
+    list = army_lists(:inactive_list)
+    assert list.inactive?
+    assert_not list.draft?
+    assert_not list.submitted?
+  end
+
+  test "inactive status is valid" do
+    list = army_lists(:draft_list)
+    list.status = "inactive"
+    assert list.valid?
+  end
+
+  test "deactivate! destroys locks and sets status to inactive" do
+    list = army_lists(:draft_list)
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+    list.submit!
+
+    assert list.submitted?
+    assert_equal 1, list.miniature_locks.count
+    submitted_at = list.submitted_at
+
+    list.deactivate!
+    list.reload
+
+    assert list.inactive?
+    assert_equal 0, list.miniature_locks.count
+    assert_equal submitted_at, list.submitted_at
+  end
+
+  test "reactivate! creates locks and sets status to submitted" do
+    list = army_lists(:draft_list)
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+    list.submit!
+    list.deactivate!
+
+    assert list.inactive?
+    assert_equal 0, list.miniature_locks.count
+
+    list.reactivate!
+    list.reload
+
+    assert list.submitted?
+    assert_equal 1, list.miniature_locks.count
+  end
+
+  test "reactivate! raises LockConflictError when miniatures are locked" do
+    list = army_lists(:draft_list)
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+    list.submit!
+    list.deactivate!
+
+    # Another list locks the same miniature
+    other_list = ArmyList.create!(
+      event: list.event,
+      player_name: "Other Player",
+      status: "draft",
+      tech_base: "mixed"
+    )
+    other_list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+    other_list.submit!
+
+    assert_raises(ArmyList::LockConflictError) do
+      list.reactivate!
+    end
   end
 end

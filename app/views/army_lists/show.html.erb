@@ -54,8 +54,16 @@
     <% end %>
   <% end %>
 
+  <%# Inactive banner %>
+  <% if @army_list.inactive? %>
+    <div class="mb-6 p-4 bg-hud-bg-panel border border-hud-border text-hud-text-muted rounded text-sm hud-panel">
+      <span class="hud-stamp hud-stamp-muted mr-3">Nieaktywna</span>
+      Lista jest nieaktywna. Modele nie są zarezerwowane.
+    </div>
+  <% end %>
+
   <%# Tabbed interface (draft only) %>
-  <% unless @army_list.submitted? %>
+  <% if @army_list.draft? %>
     <div class="lg:grid lg:grid-cols-[260px_1fr] lg:gap-6">
     <%# Faction Sidebar %>
     <aside class="hidden lg:block">
@@ -184,13 +192,15 @@
     </div><%# /main content wrapper %>
     </div><%# /grid %>
   <% else %>
-    <%# Submitted: army only, no tabs %>
+    <%# Submitted/Inactive: army only, no tabs %>
     <div id="army_list_items" class="space-y-3 hud-dashed-divider-list">
       <% @items.each do |item| %>
         <%= render partial: "army_list_items/item",
             locals: { item: item, event: @event, army_list: @army_list, is_owner: @is_owner } %>
       <% end %>
     </div>
+    <%= render partial: "army_lists/actions",
+        locals: { army_list: @army_list, event: @event, is_owner: @is_owner } %>
   <% end %>
 </div>
 
