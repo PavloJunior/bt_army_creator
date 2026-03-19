@@ -26,7 +26,7 @@ class Event < ApplicationRecord
   end
 
   def available_variants_for_chassis(chassis, tech_base: nil, faction_mul_ids: nil)
-    scope = chassis.variants.usable
+    scope = chassis.variants.usable.where("#{point_value_method} > 0")
 
     if event_era_restrictions.any?
       scope = scope.where(era_id: event_era_restrictions.pluck(:era_mul_id))

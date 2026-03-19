@@ -78,11 +78,11 @@ class SyncChassisJob < ApplicationJob
       end
 
       if variants_data.any?
-        first = variants_data.first
+        representative = variants_data.find { |d| d["Tonnage"].to_i > 0 } || variants_data.first
         chassis.update!(
-          tonnage:       first["Tonnage"]&.to_i,
-          unit_type:     first.dig("Type", "Name"),
-          image_url:     first["ImageUrl"],
+          tonnage:       representative["Tonnage"]&.to_i,
+          unit_type:     representative.dig("Type", "Name"),
+          image_url:     representative["ImageUrl"],
           mul_synced_at: Time.current
         )
       end

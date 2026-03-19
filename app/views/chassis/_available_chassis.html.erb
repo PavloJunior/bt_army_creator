@@ -1,6 +1,10 @@
 <div id="available_chassis_<%= chassis.id %>"
      data-unit-type="<%= chassis.unit_type %>"
-     data-unit-type-filter-target="item">
+     data-unit-type-filter-target="item"
+     data-chassis-browser-target="item"
+     data-chassis-name="<%= chassis.name %>"
+     data-chassis-tonnage="<%= chassis.tonnage %>"
+     data-chassis-min-pv="<%= variants.map { |v| v.send(event.point_value_method) || 0 }.min || 0 %>">
   <div data-view-toggle-target="gridItem" class="hidden">
     <%= render "chassis/available_card_content",
         chassis: chassis, available_count: available_count, total_count: total_count,
