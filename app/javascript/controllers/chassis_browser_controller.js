@@ -101,15 +101,17 @@ export default class extends Controller {
 
   observePointTotal() {
     const el = document.getElementById("point_total")
-    if (!el) return
+    if (!el || !el.parentElement) return
 
+    // Observe the parent — Turbo Stream replaces #point_total entirely,
+    // which destroys the old element. The parent stays stable.
     this.pointTotalObserver = new MutationObserver(() => {
       if (this.autoCheckboxTarget.checked) {
         this.computeAutoBudget()
         this.filter()
       }
     })
-    this.pointTotalObserver.observe(el, { childList: true, subtree: true, characterData: true })
+    this.pointTotalObserver.observe(el.parentElement, { childList: true, subtree: true })
   }
 
   computeAutoBudget() {
@@ -296,6 +298,15 @@ export default class extends Controller {
         return sortValue === "tonnage-desc" ? -diff : diff
       }
     })
+  }
+
+  resetMaxPv() {
+    this.maxPvInputTarget.value = ""
+    this.maxPvInputTarget.readOnly = false
+    this.autoCheckboxTarget.checked = false
+    this.storeRemove("max-pv")
+    this.storeSet("auto-pv", "false")
+    this.filter()
   }
 
   toggleAuto() {

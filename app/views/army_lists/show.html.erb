@@ -243,13 +243,16 @@
                          data-action="input->chassis-browser#filter"
                          class="w-20 px-2 py-1 text-xs rounded hud-select"
                          placeholder="—">
-                  <label class="flex items-center gap-1 text-xs text-hud-text-dim cursor-pointer whitespace-nowrap">
+                  <label class="flex items-center gap-1.5 text-xs text-hud-text-dim cursor-pointer whitespace-nowrap">
                     <input type="checkbox"
                            data-chassis-browser-target="autoCheckbox"
                            data-action="change->chassis-browser#toggleAuto"
-                           class="accent-hud-green">
+                           class="hud-checkbox rounded">
                     Auto
                   </label>
+                  <button class="text-base leading-none text-hud-text-muted hover:text-hud-amber cursor-pointer px-1"
+                          data-action="chassis-browser#resetMaxPv"
+                          title="Wyczyść filtr PV">&#10005;</button>
                 </div>
               </div>
               <div>

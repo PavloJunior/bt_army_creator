@@ -200,9 +200,31 @@
 /* === Checkbox === */
 
 .hud-checkbox {
-  accent-color: var(--color-hud-green);
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
   background-color: var(--color-hud-bg-input);
-  border-color: var(--color-hud-border);
+  border: 1px solid var(--color-hud-border);
+  cursor: pointer;
+  position: relative;
+}
+
+.hud-checkbox:checked {
+  background-color: var(--color-hud-green);
+  border-color: var(--color-hud-green);
+}
+
+.hud-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--color-hud-bg);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 /* === Glow Effect === */
