@@ -47,6 +47,39 @@ export default class extends Controller {
     return div.innerHTML
   }
 
+  buildAbilityButtons(abilitiesStr) {
+    if (!abilitiesStr) return ""
+
+    const specialsEl = document.getElementById("specials-data")
+    if (!specialsEl) return `<span class="text-hud-text-dim">${this.esc(abilitiesStr)}</span>`
+
+    let specials
+    try { specials = JSON.parse(specialsEl.dataset.specials) } catch {
+      return `<span class="text-hud-text-dim">${this.esc(abilitiesStr)}</span>`
+    }
+
+    const abbreviations = Object.keys(specials).sort((a, b) => b.length - a.length)
+    const tokens = abilitiesStr.split(/,\s*/)
+
+    return tokens.map(token => {
+      const e = this.esc(token)
+      const base = abbreviations.find(abbr => {
+        if (!token.startsWith(abbr)) return false
+        const remainder = token.slice(abbr.length)
+        return remainder === "" || /^[^a-zA-Z]/.test(remainder)
+      })
+
+      if (base) {
+        return `<button type="button"
+                  class="inline-block px-1.5 py-0.5 text-xs rounded border border-hud-border text-hud-green-dim hover:text-hud-green hover:border-hud-green-dim cursor-pointer bg-transparent transition-colors"
+                  data-action="special-ability-modal#show"
+                  data-special-abbreviation="${this.esc(base)}"
+                  data-special-token="${e}">${e}</button>`
+      }
+      return `<span class="inline-block px-1.5 py-0.5 text-xs text-hud-text-dim">${e}</span>`
+    }).join(" ")
+  }
+
   buildStatsHtml(v) {
     const e = (val) => this.esc(val)
     const dash = "\u2014"
@@ -66,7 +99,7 @@ export default class extends Controller {
             <div><span class="text-hud-text-muted">Armor:</span> ${s(v.bf_armor)}</div>
             <div><span class="text-hud-text-muted">Structure:</span> ${s(v.bf_structure)}</div>
           </div>
-          ${v.bf_abilities ? `<div class="mt-2"><span class="text-hud-text-muted">Special:</span> <span class="text-hud-text-dim">${s(v.bf_abilities)}</span></div>` : ""}
+          ${v.bf_abilities ? `<div class="mt-2 flex flex-wrap items-center gap-1" data-controller="special-ability-modal"><span class="text-hud-text-muted mr-1">Special:</span> ${this.buildAbilityButtons(v.bf_abilities)}</div>` : ""}
           <div class="mt-2 text-xs text-hud-text-muted">
             ${s(v.technology)} &middot; ${s(v.era)}
           </div>

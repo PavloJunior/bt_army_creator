@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_16_224108) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_20_140745) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -162,6 +162,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_224108) do
     t.string "user_agent"
     t.integer "user_id", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "specials", force: :cascade do |t|
+    t.string "abbreviation", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "full_name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["abbreviation"], name: "index_specials_on_abbreviation", unique: true
   end
 
   create_table "sync_attempts", force: :cascade do |t|

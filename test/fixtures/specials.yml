@@ -1,0 +1,54 @@
+ene:
+  abbreviation: ENE
+  full_name: Energy
+  description: A unit with this ability has little to no ammo to explode, and ignores Ammo Hit critical hits.
+
+if_ability:
+  abbreviation: IF
+  full_name: Indirect Fire
+  description: The Indirect Fire special ability allows a unit to attack a target without having a valid LOS.
+
+ac:
+  abbreviation: AC
+  full_name: Autocannon
+  description: This unit mounts a significant number of autocannons.
+
+case_ability:
+  abbreviation: CASE
+  full_name: Cellular Ammunition Storage Equipment
+  description: Units with this ability can minimize the catastrophic effects of an ammunition explosion.
+
+caseii:
+  abbreviation: CASEII
+  full_name: Cellular Ammunition Storage Equipment II
+  description: Units with this ability have superior protection against ammunition explosions.
+
+c3m:
+  abbreviation: C3M
+  full_name: C3 Master Computer
+  description: The C3 master computer enables up to four units to share targeting information.
+
+c3bsm:
+  abbreviation: C3BSM
+  full_name: C3 Boosted Systems Master
+  description: The C3 boosted system works identically to a standard C3 system.
+
+lmas:
+  abbreviation: LMAS
+  full_name: Light Mimetic Armor System
+  description: LMAS functions the same way as MAS, but provides only a +2 modifier.
+
+mas:
+  abbreviation: MAS
+  full_name: Mimetic Armor System
+  description: Mimetic armors are similar to Stealth systems.
+
+rear:
+  abbreviation: REAR
+  full_name: Rear-Firing Weapons
+  description: Units with rear-facing weapons feature the REAR special ability.
+
+srm:
+  abbreviation: SRM
+  full_name: Short Range Missiles
+  description: This unit mounts a significant number of short-range missile launchers.

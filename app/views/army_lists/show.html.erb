@@ -1,5 +1,6 @@
 <%= turbo_stream_from "event_#{@event.id}_miniatures" %>
 <% content_for(:status_context) { "BUDOWANIE LISTY // #{@army_list.player_name.upcase}" } %>
+<%= specials_data_tag %>
 
 <div class="max-w-6xl mx-auto">
   <%# Army Status Banner %>
