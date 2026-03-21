@@ -76,6 +76,11 @@
         <div class="flex gap-2">
           <%= link_to "View", admin_event_army_list_path(@event, list),
               class: "text-hud-green hover:text-hud-green-dim text-sm" %>
+          <% if list.draft? %>
+            <%= button_to "Submit", submit_admin_event_army_list_path(@event, list),
+                method: :patch, class: "text-hud-green hover:text-hud-green-dim text-sm",
+                data: { turbo_confirm: "Submit this list? Miniatures will be locked." } %>
+          <% end %>
           <% if list.submitted? %>
             <%= button_to "Deactivate", deactivate_admin_event_army_list_path(@event, list),
                 method: :patch, class: "text-hud-amber hover:text-hud-amber-dim text-sm",

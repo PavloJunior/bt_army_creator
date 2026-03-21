@@ -16,7 +16,7 @@
             <%= form_with url: change_tech_base_event_army_list_path(@event, @army_list),
                 method: :patch,
                 class: "inline-flex items-center gap-1",
-                data: { controller: "tech-base", tech_base_original_value: @army_list.tech_base } do %>
+                data: { turbo: false, controller: "tech-base", tech_base_original_value: @army_list.tech_base } do %>
               <%= select_tag :tech_base,
                   options_for_select(
                     [["Inner Sphere", "inner_sphere"], ["Clan", "clan"], ["Mixed", "mixed"]],

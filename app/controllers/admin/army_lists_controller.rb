@@ -1,7 +1,7 @@
 module Admin
   class ArmyListsController < BaseController
     before_action :set_event
-    before_action :set_army_list, only: [ :show, :destroy, :unlock, :deactivate, :reactivate ]
+    before_action :set_army_list, only: [ :show, :destroy, :submit, :unlock, :deactivate, :reactivate ]
 
     def index
       @army_lists = @event.army_lists.order(:created_at)
@@ -14,6 +14,13 @@ module Admin
     def destroy
       @army_list.destroy
       redirect_to admin_event_path(@event), notice: "Army list deleted."
+    end
+
+    def submit
+      @army_list.submit!
+      redirect_to admin_event_path(@event), notice: "Army list submitted. Miniatures are now locked."
+    rescue ArmyList::LockConflictError, ArmyList::PointCapExceededError => e
+      redirect_to admin_event_path(@event), alert: e.message
     end
 
     def unlock
