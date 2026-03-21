@@ -18,7 +18,7 @@ class ArmyListItem < ApplicationRecord
   def exceeds_point_cap?
     return false unless variant && army_list
 
-    army_list.total_points > army_list.event.point_cap
+    army_list.total_points > army_list.effective_point_cap
   end
 
   private

@@ -63,7 +63,9 @@
           <span class="font-medium text-hud-green"><%= list.player_name %></span>
           <span class="text-sm text-hud-text-muted ml-2">
             <%= list.army_list_items.size %> units &middot;
-            <%= list.total_points %> <%= @event.point_value_label %>
+            <%= list.total_points %> <%= @event.point_value_label %><% if list.bonus_points != 0 %>
+              <span class="text-hud-amber">(<%= list.bonus_points >= 0 ? "+" : "" %><%= list.bonus_points %>)</span>
+            <% end %>
           </span>
           <span class="ml-2 hud-stamp <%= case list.status
                 when 'submitted' then 'hud-stamp-green'

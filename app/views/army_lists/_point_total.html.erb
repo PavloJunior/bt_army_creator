@@ -1,6 +1,6 @@
 <div id="point_total" class="text-right">
   <% total = army_list.total_points %>
-  <% cap = event.point_cap %>
+  <% cap = army_list.effective_point_cap %>
   <% percentage = cap > 0 ? (total.to_f / cap * 100).clamp(0, 100) : 0 %>
   <% over_cap = total > cap %>
   <%# Readout text color shifts with percentage %>
@@ -20,7 +20,9 @@
         <%= event.point_value_label.upcase %> Capacity
       </div>
       <div class="text-xs text-hud-text-dim">
-        <%= total %> / <%= cap %>
+        <%= total %> / <%= cap %><% if army_list.bonus_points != 0 %>
+          <span class="text-hud-amber">(<%= event.point_cap %><%= army_list.bonus_points >= 0 ? "+" : "" %><%= army_list.bonus_points %>)</span>
+        <% end %>
       </div>
     </div>
     <div class="hud-gauge-track rounded-sm" style="<%= 'border-color: var(--color-hud-red); box-shadow: 0 0 8px var(--color-hud-red-glow);' if over_cap %>">

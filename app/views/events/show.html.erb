@@ -61,7 +61,9 @@
                 <span class="font-medium text-hud-amber"><%= draft.player_name %></span>
                 <span class="text-sm text-hud-text-dim ml-2">
                   <%= draft.army_list_items.size %> jednostek &middot;
-                  <%= draft.total_points %> / <%= @event.point_cap %> <%= @event.point_value_label %>
+                  <%= draft.total_points %> / <%= draft.effective_point_cap %> <%= @event.point_value_label %><% if draft.bonus_points != 0 %>
+                    <span class="text-hud-amber">(<%= draft.bonus_points >= 0 ? "+" : "" %><%= draft.bonus_points %>)</span>
+                  <% end %>
                 </span>
               </div>
               <span class="hud-stamp hud-stamp-amber">Wersja robocza</span>
@@ -86,7 +88,9 @@
                 <span class="font-medium text-hud-text-muted"><%= list.player_name %></span>
                 <span class="text-sm text-hud-text-dim ml-2">
                   <%= list.army_list_items.size %> jednostek &middot;
-                  <%= list.total_points %> / <%= @event.point_cap %> <%= @event.point_value_label %>
+                  <%= list.total_points %> / <%= list.effective_point_cap %> <%= @event.point_value_label %><% if list.bonus_points != 0 %>
+                    <span class="text-hud-amber">(<%= list.bonus_points >= 0 ? "+" : "" %><%= list.bonus_points %>)</span>
+                  <% end %>
                 </span>
               </div>
               <span class="hud-stamp hud-stamp-muted">Nieaktywna</span>

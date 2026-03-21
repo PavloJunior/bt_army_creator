@@ -9,7 +9,9 @@
     <p class="text-hud-text-muted mt-1">
       <%= @event.name %> &middot;
       <%= @army_list.tech_base_label %> &middot;
-      <%= @army_list.total_points %> / <%= @event.point_cap %> <%= @event.point_value_label %>
+      <%= @army_list.total_points %> / <%= @army_list.effective_point_cap %> <%= @event.point_value_label %><% if @army_list.bonus_points != 0 %>
+        <span class="text-hud-amber">(<%= @event.point_cap %><%= @army_list.bonus_points >= 0 ? "+" : "" %><%= @army_list.bonus_points %>)</span>
+      <% end %>
     </p>
   </div>
   <span class="hud-stamp <%= case @army_list.status
@@ -19,6 +21,18 @@
         end %>">
     <%= { "draft" => "Draft", "submitted" => "Submitted", "inactive" => "Inactive" }[@army_list.status] %>
   </span>
+</div>
+
+<div class="bg-hud-bg-panel border border-hud-border rounded p-4 mb-6">
+  <h3 class="text-sm font-medium text-hud-text-muted uppercase tracking-wider mb-2">Bonus Points</h3>
+  <%= form_with model: @army_list, url: admin_event_army_list_path(@event, @army_list), method: :patch, class: "flex items-center gap-3" do |f| %>
+    <%= f.number_field :bonus_points, class: "w-24 px-3 py-1.5 bg-hud-bg border border-hud-border rounded text-sm text-hud-green focus:border-hud-green focus:outline-none", step: 1 %>
+    <span class="text-sm text-hud-text-muted"><%= @event.point_value_label %></span>
+    <%= f.submit "Save", class: "px-3 py-1.5 hud-btn-primary rounded text-sm cursor-pointer" %>
+    <% if @army_list.bonus_points != 0 %>
+      <span class="text-xs text-hud-text-dim">Effective cap: <%= @army_list.effective_point_cap %> <%= @event.point_value_label %></span>
+    <% end %>
+  <% end %>
 </div>
 
 <% if @items.any? %>

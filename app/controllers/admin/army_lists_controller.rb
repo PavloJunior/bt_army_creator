@@ -1,7 +1,7 @@
 module Admin
   class ArmyListsController < BaseController
     before_action :set_event
-    before_action :set_army_list, only: [ :show, :destroy, :submit, :unlock, :deactivate, :reactivate ]
+    before_action :set_army_list, only: [ :show, :update, :destroy, :submit, :unlock, :deactivate, :reactivate ]
 
     def index
       @army_lists = @event.army_lists.order(:created_at)
@@ -9,6 +9,14 @@ module Admin
 
     def show
       @items = @army_list.army_list_items.includes(miniature: :chassis, variant: [])
+    end
+
+    def update
+      if @army_list.update(army_list_params)
+        redirect_to admin_event_army_list_path(@event, @army_list), notice: "Army list updated."
+      else
+        redirect_to admin_event_army_list_path(@event, @army_list), alert: @army_list.errors.full_messages.join(", ")
+      end
     end
 
     def destroy
@@ -48,6 +56,10 @@ module Admin
 
     def set_army_list
       @army_list = @event.army_lists.find(params[:id])
+    end
+
+    def army_list_params
+      params.require(:army_list).permit(:bonus_points)
     end
   end
 end

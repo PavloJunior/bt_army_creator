@@ -13,6 +13,7 @@ class ArmyList < ApplicationRecord
   validates :player_name, presence: true
   validates :status, inclusion: { in: %w[draft submitted inactive] }
   validates :tech_base, presence: true, inclusion: { in: TECH_BASES }
+  validate :bonus_points_cannot_reduce_cap_below_one
 
   def selected_faction_mul_ids
     ids = army_list_factions.pluck(:faction_mul_id)
@@ -21,6 +22,10 @@ class ArmyList < ApplicationRecord
 
   def tech_base_label
     { "inner_sphere" => "Inner Sphere", "clan" => "Clan", "mixed" => "Mixed" }[tech_base]
+  end
+
+  def effective_point_cap
+    event.point_cap + bonus_points
   end
 
   def total_points
@@ -34,7 +39,7 @@ class ArmyList < ApplicationRecord
   end
 
   def points_remaining
-    event.point_cap - total_points
+    effective_point_cap - total_points
   end
 
   def submitted?
@@ -61,9 +66,9 @@ class ArmyList < ApplicationRecord
   end
 
   def submit!
-    if total_points > event.point_cap
+    if total_points > effective_point_cap
       raise PointCapExceededError,
-        "Nie można zgłosić listy — przekroczono limit #{event.point_cap} #{event.point_value_label} (razem: #{total_points} #{event.point_value_label})"
+        "Nie można zgłosić listy — przekroczono limit #{effective_point_cap} #{event.point_value_label} (razem: #{total_points} #{event.point_value_label})"
     end
 
     items = army_list_items.includes(:miniature)
@@ -137,6 +142,14 @@ class ArmyList < ApplicationRecord
   end
 
   private
+
+  def bonus_points_cannot_reduce_cap_below_one
+    return unless event
+
+    if effective_point_cap < 1
+      errors.add(:bonus_points, "cannot reduce effective point cap below 1")
+    end
+  end
 
   def prefetch_missing_cards
     army_list_items.includes(variant: { variant_cards: { image_attachment: :blob } }).each do |item|

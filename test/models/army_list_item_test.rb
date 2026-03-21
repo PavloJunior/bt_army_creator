@@ -177,4 +177,20 @@ class ArmyListItemTest < ActiveSupport::TestCase
     item2 = ArmyListItem.new(army_list: list, miniature: miniatures(:timber_wolf_mini), variant: variants(:timber_wolf_prime))
     assert item2.valid?
   end
+
+  test "exceeds_point_cap? uses effective_point_cap with bonus" do
+    list = army_lists(:draft_list)
+    list.event.update!(point_cap: 50)
+    list.bonus_points = 20
+    list.save!
+
+    item = list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+
+    # Atlas PV 52 > base cap 50, but effective cap is 70
+    assert_not item.exceeds_point_cap?
+  end
 end

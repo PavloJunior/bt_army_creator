@@ -33,7 +33,7 @@ Rails.application.routes.draw do
         patch :activate
         patch :complete
       end
-      resources :army_lists, only: [ :index, :show, :destroy ] do
+      resources :army_lists, only: [ :index, :show, :destroy, :update ] do
         member do
           patch :submit
           patch :unlock

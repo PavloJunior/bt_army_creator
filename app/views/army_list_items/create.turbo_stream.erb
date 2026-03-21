@@ -31,7 +31,7 @@
   <%= turbo_stream.update "toast" do %>
     <div class="p-4 bg-hud-bg-panel border border-hud-amber text-hud-amber rounded text-sm shadow-lg shadow-hud-amber-glow"
          data-controller="auto-dismiss" data-auto-dismiss-delay-value="4000">
-      <p>Przekroczono limit <%= @event.point_cap %> <%= @event.point_value_label %> — nie będzie można zgłosić listy bez zmniejszenia punktów.</p>
+      <p>Przekroczono limit <%= @army_list.effective_point_cap %> <%= @event.point_value_label %> — nie będzie można zgłosić listy bez zmniejszenia punktów.</p>
     </div>
   <% end %>
 <% else %>

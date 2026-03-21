@@ -210,4 +210,68 @@ class ArmyListTest < ActiveSupport::TestCase
       list.reactivate!
     end
   end
+
+  test "effective_point_cap returns event cap when bonus is zero" do
+    list = army_lists(:draft_list)
+    assert_equal 0, list.bonus_points
+    assert_equal list.event.point_cap, list.effective_point_cap
+  end
+
+  test "effective_point_cap adds positive bonus to event cap" do
+    list = army_lists(:draft_list)
+    list.bonus_points = 50
+    assert_equal list.event.point_cap + 50, list.effective_point_cap
+  end
+
+  test "effective_point_cap subtracts negative bonus from event cap" do
+    list = army_lists(:draft_list)
+    list.bonus_points = -50
+    assert_equal list.event.point_cap - 50, list.effective_point_cap
+  end
+
+  test "points_remaining accounts for bonus_points" do
+    list = army_lists(:draft_list)
+    list.bonus_points = 100
+    assert_equal list.effective_point_cap, list.points_remaining
+  end
+
+  test "submit! allows submission when total under effective cap with bonus" do
+    list = army_lists(:draft_list)
+    list.event.update!(point_cap: 50)
+    list.bonus_points = 20
+    list.save!
+
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+
+    # Atlas PV 52 > base cap 50, but effective cap is 70
+    assert_nothing_raised { list.submit! }
+    assert list.reload.submitted?
+  end
+
+  test "submit! rejects submission when total exceeds effective cap" do
+    list = army_lists(:draft_list)
+    list.event.update!(point_cap: 50)
+    list.bonus_points = 0
+    list.save!
+
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+
+    # Atlas PV 52 > cap 50
+    assert_raises(ArmyList::PointCapExceededError) { list.submit! }
+  end
+
+  test "bonus_points cannot reduce effective cap below 1" do
+    list = army_lists(:draft_list)
+    list.bonus_points = -list.event.point_cap
+    assert_not list.valid?
+    assert list.errors[:bonus_points].any?
+  end
 end
