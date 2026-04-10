@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_21_161445) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_03_152051) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -65,12 +65,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_161445) do
     t.integer "bonus_points", default: 0, null: false
     t.datetime "created_at", null: false
     t.integer "event_id", null: false
+    t.integer "event_side_id"
     t.string "player_name", null: false
     t.string "status", default: "draft", null: false
     t.datetime "submitted_at"
     t.string "tech_base", default: "mixed", null: false
     t.datetime "updated_at", null: false
     t.index ["event_id"], name: "index_army_lists_on_event_id"
+    t.index ["event_side_id"], name: "index_army_lists_on_event_side_id"
   end
 
   create_table "chassis", force: :cascade do |t|
@@ -115,6 +117,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_161445) do
     t.index ["event_id"], name: "index_event_faction_restrictions_on_event_id"
   end
 
+  create_table "event_side_factions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "event_side_id", null: false
+    t.integer "faction_mul_id", null: false
+    t.string "faction_name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_side_id", "faction_mul_id"], name: "index_event_side_factions_on_event_side_id_and_faction_mul_id", unique: true
+    t.index ["event_side_id"], name: "index_event_side_factions_on_event_side_id"
+  end
+
+  create_table "event_sides", force: :cascade do |t|
+    t.json "allowed_tech_bases"
+    t.datetime "created_at", null: false
+    t.integer "event_id", null: false
+    t.integer "max_players"
+    t.string "name", null: false
+    t.integer "point_cap", null: false
+    t.integer "position", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_event_sides_on_event_id"
+  end
+
   create_table "events", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "date", null: false
@@ -123,6 +147,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_161445) do
     t.text "notes"
     t.integer "point_cap", null: false
     t.string "status", default: "upcoming", null: false
+    t.boolean "themed", default: false, null: false
     t.datetime "updated_at", null: false
   end
 
@@ -259,9 +284,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_21_161445) do
   add_foreign_key "army_list_items", "army_lists"
   add_foreign_key "army_list_items", "miniatures"
   add_foreign_key "army_list_items", "variants"
+  add_foreign_key "army_lists", "event_sides"
   add_foreign_key "army_lists", "events"
   add_foreign_key "event_era_restrictions", "events"
   add_foreign_key "event_faction_restrictions", "events"
+  add_foreign_key "event_side_factions", "event_sides"
+  add_foreign_key "event_sides", "events"
   add_foreign_key "miniature_locks", "army_lists"
   add_foreign_key "miniature_locks", "events"
   add_foreign_key "miniature_locks", "miniatures"

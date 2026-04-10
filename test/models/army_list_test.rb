@@ -274,4 +274,66 @@ class ArmyListTest < ActiveSupport::TestCase
     assert_not list.valid?
     assert list.errors[:bonus_points].any?
   end
+
+  # --- effective_point_cap with themed events ---
+
+  test "effective_point_cap uses event.point_cap for standard (non-themed) events" do
+    list = army_lists(:draft_list)
+    assert_nil list.event_side
+    assert_equal list.event.point_cap, list.effective_point_cap
+  end
+
+  test "effective_point_cap uses event_side.per_player_point_cap for themed events" do
+    side = event_sides(:comstar_side)
+    list = ArmyList.create!(
+      event: side.event,
+      event_side: side,
+      player_name: "Themed Player",
+      status: "draft",
+      tech_base: "mixed"
+    )
+
+    # Only one player on this side, so per_player_point_cap == point_cap (300)
+    assert_equal 300, list.effective_point_cap
+  end
+
+  test "effective_point_cap reflects changing player count on side" do
+    side = event_sides(:comstar_side)
+    list1 = ArmyList.create!(
+      event: side.event,
+      event_side: side,
+      player_name: "Player 1",
+      status: "draft",
+      tech_base: "mixed"
+    )
+
+    # 1 player -> per_player_point_cap = 300
+    assert_equal 300, list1.effective_point_cap
+
+    ArmyList.create!(
+      event: side.event,
+      event_side: side,
+      player_name: "Player 2",
+      status: "draft",
+      tech_base: "mixed"
+    )
+
+    # 2 players -> per_player_point_cap = 150
+    assert_equal 150, list1.effective_point_cap
+  end
+
+  test "effective_point_cap with event_side includes bonus_points" do
+    side = event_sides(:comstar_side)
+    list = ArmyList.create!(
+      event: side.event,
+      event_side: side,
+      player_name: "Bonus Player",
+      status: "draft",
+      tech_base: "mixed",
+      bonus_points: 25
+    )
+
+    # 1 player: per_player_point_cap = 300, + bonus 25 = 325
+    assert_equal 325, list.effective_point_cap
+  end
 end

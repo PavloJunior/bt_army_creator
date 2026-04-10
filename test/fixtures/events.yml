@@ -11,3 +11,11 @@ active_event:
   game_system: classic_bt
   point_cap: 5000
   status: active
+
+themed_event:
+  name: Battle of Tukayyid
+  date: 2026-05-01
+  game_system: alpha_strike
+  point_cap: 600
+  status: upcoming
+  themed: true

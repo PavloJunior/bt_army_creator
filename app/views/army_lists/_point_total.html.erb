@@ -20,8 +20,9 @@
         <%= event.point_value_label.upcase %> Capacity
       </div>
       <div class="text-xs text-hud-text-dim">
+        <% base_display = army_list.event_side ? army_list.event_side.per_player_point_cap : event.point_cap %>
         <%= total %> / <%= cap %><% if army_list.bonus_points != 0 %>
-          <span class="text-hud-amber">(<%= event.point_cap %><%= army_list.bonus_points >= 0 ? "+" : "" %><%= army_list.bonus_points %>)</span>
+          <span class="text-hud-amber">(<%= base_display %><%= army_list.bonus_points >= 0 ? "+" : "" %><%= army_list.bonus_points %>)</span>
         <% end %>
       </div>
     </div>

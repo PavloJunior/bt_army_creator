@@ -126,6 +126,51 @@ class ArmyListsControllerTest < ActionDispatch::IntegrationTest
     assert @draft_list.draft?
   end
 
+  # --- Create with event_side triggers recalculate ---
+
+  test "creating a list on a themed event side unlocks submitted lists on that side" do
+    themed_event = events(:themed_event)
+    themed_event.update!(status: "active")
+    side = event_sides(:comstar_side)
+
+    # Create and submit a list on the side
+    existing_list = ArmyList.create!(event: themed_event, event_side: side, player_name: "Existing Player", status: "draft", tech_base: "inner_sphere")
+    existing_list.army_list_items.create!(miniature: miniatures(:atlas_mini), variant: variants(:atlas_d), skill: 4)
+    existing_list.submit!
+    assert existing_list.reload.submitted?
+
+    # Create a new list on the same side via controller
+    post event_army_lists_path(themed_event), params: {
+      army_list: { player_name: "New Player", tech_base: "inner_sphere", event_side_id: side.id }
+    }
+
+    # The submitted list should be reset to draft
+    assert existing_list.reload.draft?
+  end
+
+  # --- Deactivate triggers recalculate on themed event ---
+
+  test "deactivating a list on a themed event side unlocks other submitted lists" do
+    themed_event = events(:themed_event)
+    themed_event.update!(status: "active")
+    side = event_sides(:comstar_side)
+
+    list1 = ArmyList.create!(event: themed_event, event_side: side, player_name: "Player 1", status: "draft", tech_base: "inner_sphere")
+    list1.army_list_items.create!(miniature: miniatures(:atlas_mini), variant: variants(:atlas_d), skill: 4)
+    list1.submit!
+
+    list2 = ArmyList.create!(event: themed_event, event_side: side, player_name: "Player 2", status: "draft", tech_base: "inner_sphere")
+    list2.army_list_items.create!(miniature: miniatures(:commando_mini), variant: variants(:commando_2d), skill: 4)
+    list2.submit!
+
+    set_army_list_cookie([ list2.id ])
+    patch deactivate_event_army_list_path(themed_event, list2)
+
+    assert_redirected_to event_army_list_path(themed_event, list2)
+    assert list1.reload.draft?
+    assert list2.reload.inactive?
+  end
+
   # --- Toggle faction guard ---
 
   test "toggle_faction blocked on submitted list" do

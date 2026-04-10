@@ -8,14 +8,44 @@ class ArmyListsController < ApplicationController
 
   def new
     @army_list = @event.army_lists.build
+    if @event.themed?
+      @event_sides = @event.event_sides.includes(:event_side_factions, :army_lists)
+    end
   end
 
   def create
     @army_list = @event.army_lists.build(army_list_params)
+
+    if @event.themed?
+      side = @army_list.event_side
+      if side.nil? || side.event_id != @event.id
+        @army_list.errors.add(:event_side_id, "musisz wybrać stronę konfliktu")
+        @event_sides = @event.event_sides.includes(:event_side_factions, :army_lists)
+        render :new, status: :unprocessable_entity
+        return
+      end
+      if side.full?
+        @army_list.errors.add(:event_side_id, "wybrana strona jest już pełna")
+        @event_sides = @event.event_sides.includes(:event_side_factions, :army_lists)
+        render :new, status: :unprocessable_entity
+        return
+      end
+      unless side.available_tech_bases.include?(@army_list.tech_base)
+        @army_list.errors.add(:tech_base, "niedostępna dla wybranej strony")
+        @event_sides = @event.event_sides.includes(:event_side_factions, :army_lists)
+        render :new, status: :unprocessable_entity
+        return
+      end
+    end
+
     if @army_list.save
+      @army_list.event_side&.recalculate_caps!
       store_army_list_in_cookie(@army_list)
       redirect_to event_army_list_path(@event, @army_list)
     else
+      if @event.themed?
+        @event_sides = @event.event_sides.includes(:event_side_factions, :army_lists)
+      end
       render :new, status: :unprocessable_entity
     end
   end
@@ -44,7 +74,12 @@ class ArmyListsController < ApplicationController
     @available_unit_types = all_chassis.where.not(unit_type: [ nil, "" ]).distinct.pluck(:unit_type).sort
 
     @is_owner = owner_of_army_list?(@army_list) || admin_signed_in?
-    @sidebar_factions = Faction.for_sidebar(@army_list.tech_base)
+    if @army_list.event_side
+      side_faction_ids = @army_list.event_side.event_side_factions.pluck(:faction_mul_id)
+      @sidebar_factions = Faction.where(mul_id: side_faction_ids).order(:name).group_by(&:category)
+    else
+      @sidebar_factions = Faction.for_sidebar(@army_list.tech_base)
+    end
     @selected_faction_mul_ids = @army_list.army_list_factions.pluck(:faction_mul_id)
   end
 
@@ -62,7 +97,8 @@ class ArmyListsController < ApplicationController
 
   def change_tech_base
     new_tech_base = params[:tech_base]
-    if @army_list.draft? && new_tech_base != @army_list.tech_base && ArmyList::TECH_BASES.include?(new_tech_base)
+    valid_bases = @army_list.event_side ? @army_list.event_side.available_tech_bases : ArmyList::TECH_BASES
+    if @army_list.draft? && new_tech_base != @army_list.tech_base && valid_bases.include?(new_tech_base)
       @army_list.transaction do
         @army_list.army_list_items.destroy_all
         @army_list.army_list_factions.destroy_all
@@ -186,6 +222,6 @@ class ArmyListsController < ApplicationController
   end
 
   def army_list_params
-    params.require(:army_list).permit(:player_name, :tech_base)
+    params.require(:army_list).permit(:player_name, :tech_base, :event_side_id)
   end
 end

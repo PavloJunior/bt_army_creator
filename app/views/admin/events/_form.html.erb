@@ -1,4 +1,4 @@
-<%= form_with model: [:admin, event], class: "space-y-6" do |form| %>
+<%= form_with model: [:admin, event], class: "space-y-6", data: { controller: "themed-event" } do |form| %>
   <% if event.errors.any? %>
     <div class="p-4 bg-hud-red/10 border border-hud-red text-hud-red rounded">
       <ul class="list-disc list-inside">
@@ -29,9 +29,9 @@
           {}, class: "w-full px-3 py-2 hud-select rounded" %>
     </div>
 
-    <div>
+    <div data-themed-event-target="pointCapField">
       <%= form.label :point_cap, "Point Cap", class: "block text-sm font-medium text-hud-text-dim mb-1" %>
-      <%= form.number_field :point_cap, required: true, min: 1,
+      <%= form.number_field :point_cap, required: !event.themed?, min: 1,
           class: "w-full px-3 py-2 hud-input rounded" %>
     </div>
   </div>
@@ -41,6 +41,14 @@
     <%= form.text_area :notes, rows: 4,
         placeholder: "Additional rules or notes for this event...",
         class: "w-full px-3 py-2 hud-input rounded" %>
+  </div>
+
+  <%# Themed event toggle %>
+  <div class="flex items-center gap-2">
+    <%= form.check_box :themed, class: "hud-checkbox rounded",
+        data: { themed_checkbox: true, action: "themed-event#toggle" } %>
+    <%= form.label :themed, "Themed Event", class: "text-sm font-medium text-hud-text-dim" %>
+    <span class="text-xs text-hud-text-muted">(Sides with separate point caps and factions)</span>
   </div>
 
   <% if eras.any? %>
@@ -59,8 +67,9 @@
     </fieldset>
   <% end %>
 
+  <%# Faction restrictions — shown when NOT themed %>
   <% if factions.any? %>
-    <fieldset>
+    <fieldset data-themed-event-target="factionRestrictions" class="<%= "hidden" if event.themed? %>">
       <legend class="text-sm font-medium text-hud-text-dim mb-2">Faction restrictions (leave empty for no restriction)</legend>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto border border-hud-border bg-hud-bg rounded p-3">
         <% factions.each do |faction| %>
@@ -73,6 +82,38 @@
         <% end %>
       </div>
     </fieldset>
+  <% end %>
+
+  <%# Sides editor — shown when themed %>
+  <% if factions.any? %>
+    <div data-themed-event-target="sidesEditor" class="space-y-4 <%= "hidden" unless event.themed? %>">
+      <h3 class="text-sm font-medium text-hud-text-dim uppercase tracking-wider">Sides</h3>
+
+      <% existing_sides = event.event_sides.order(:position).to_a %>
+      <% if existing_sides.any? %>
+        <% existing_sides.each_with_index do |side, index| %>
+          <%= render partial: "admin/events/side_fields", locals: { side: side, index: index, factions: factions } %>
+        <% end %>
+      <% elsif event.themed? %>
+        <%# New themed event — render 2 empty sides %>
+        <% 2.times do |index| %>
+          <%= render partial: "admin/events/side_fields", locals: { side: nil, index: index, factions: factions } %>
+        <% end %>
+      <% end %>
+
+      <template data-themed-event-target="sideTemplate">
+        <%= render partial: "admin/events/side_fields", locals: { side: nil, index: 0, factions: factions } %>
+      </template>
+
+      <div>
+        <button type="button"
+                data-themed-event-target="addSideButton"
+                data-action="themed-event#addSide"
+                class="px-3 py-2 hud-btn-primary rounded text-sm cursor-pointer">
+          + Add Side
+        </button>
+      </div>
+    </div>
   <% end %>
 
   <div class="flex gap-3">

@@ -1,0 +1,65 @@
+<div data-themed-event-target="sideContainer"
+     class="bg-hud-bg-panel border border-hud-border rounded p-4 space-y-3">
+  <div class="flex justify-between items-center">
+    <h4 class="text-sm font-bold text-hud-green font-hud-heading" data-side-number>Side <%= index + 1 %></h4>
+    <button type="button"
+            data-remove-side
+            data-action="themed-event#removeSide"
+            class="text-xs text-hud-red hover:text-hud-red-dim cursor-pointer">
+      Remove
+    </button>
+  </div>
+
+  <%# name must be the first sides[][] field so Rails groups params by side correctly %>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div>
+      <label class="block text-xs font-medium text-hud-text-dim mb-1">Name</label>
+      <input type="text" name="sides[][name]" value="<%= side&.name %>"
+             required class="w-full px-3 py-2 hud-input rounded text-sm">
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-hud-text-dim mb-1">Point Cap</label>
+      <input type="number" name="sides[][point_cap]" value="<%= side&.point_cap %>"
+             required min="1" class="w-full px-3 py-2 hud-input rounded text-sm">
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-hud-text-dim mb-1">Max Players (optional)</label>
+      <input type="number" name="sides[][max_players]" value="<%= side&.max_players %>"
+             min="1" class="w-full px-3 py-2 hud-input rounded text-sm">
+    </div>
+  </div>
+
+  <% if side&.persisted? %>
+    <input type="hidden" name="sides[][id]" value="<%= side.id %>">
+  <% end %>
+  <input type="hidden" name="sides[][position]" value="<%= index + 1 %>" data-position-field>
+
+  <div>
+    <label class="block text-xs font-medium text-hud-text-dim mb-1">Restrict Tech Bases <span class="text-hud-text-muted font-normal">(leave empty for auto-detect)</span></label>
+    <div class="flex gap-4">
+      <% current_bases = side&.allowed_tech_bases || [] %>
+      <% [["Inner Sphere", "inner_sphere"], ["Clan", "clan"], ["Mixed", "mixed"]].each do |label, value| %>
+        <label class="flex items-center gap-2 text-xs text-hud-text-dim">
+          <input type="checkbox" name="sides[][allowed_tech_bases][]" value="<%= value %>"
+                 <%= "checked" if current_bases.include?(value) %>
+                 class="hud-checkbox rounded">
+          <%= label %>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <div>
+    <label class="block text-xs font-medium text-hud-text-dim mb-1">Factions</label>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border border-hud-border bg-hud-bg rounded p-3">
+      <% factions.each do |faction| %>
+        <label class="flex items-center gap-2 text-xs text-hud-text-dim">
+          <input type="checkbox" name="sides[][faction_ids][]" value="<%= faction.mul_id %>"
+                 <%= "checked" if side&.event_side_factions&.any? { |sf| sf.faction_mul_id == faction.mul_id } %>
+                 class="hud-checkbox rounded">
+          <%= faction.name %>
+        </label>
+      <% end %>
+    </div>
+  </div>
+</div>

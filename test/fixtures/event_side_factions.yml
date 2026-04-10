@@ -1,0 +1,9 @@
+comstar_side_fedsuns:
+  event_side: comstar_side
+  faction_mul_id: 29
+  faction_name: Federated Suns
+
+clan_side_clan_wolf:
+  event_side: clan_side
+  faction_mul_id: 24
+  faction_name: Clan Wolf

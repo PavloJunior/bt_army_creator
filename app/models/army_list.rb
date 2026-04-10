@@ -3,8 +3,10 @@ class ArmyList < ApplicationRecord
   class PointCapExceededError < StandardError; end
 
   TECH_BASES = %w[inner_sphere clan mixed].freeze
+  TECH_BASES_LABELS = { "inner_sphere" => "Inner Sphere", "clan" => "Clan", "mixed" => "Mixed" }.freeze
 
   belongs_to :event
+  belongs_to :event_side, optional: true
   has_many :army_list_items, dependent: :destroy
   has_many :army_list_factions, dependent: :destroy
   has_many :miniatures, through: :army_list_items
@@ -14,6 +16,10 @@ class ArmyList < ApplicationRecord
   validates :status, inclusion: { in: %w[draft submitted inactive] }
   validates :tech_base, presence: true, inclusion: { in: TECH_BASES }
   validate :bonus_points_cannot_reduce_cap_below_one
+  validate :event_side_must_belong_to_event, if: -> { event_side.present? }
+  validate :themed_event_requires_side, if: -> { event&.themed? }
+
+  after_destroy :recalculate_side_caps
 
   def selected_faction_mul_ids
     ids = army_list_factions.pluck(:faction_mul_id)
@@ -25,7 +31,8 @@ class ArmyList < ApplicationRecord
   end
 
   def effective_point_cap
-    event.point_cap + bonus_points
+    base_cap = event_side ? event_side.per_player_point_cap : event.point_cap
+    base_cap + bonus_points
   end
 
   def total_points
@@ -113,6 +120,7 @@ class ArmyList < ApplicationRecord
     end
 
     broadcast_lock_updates
+    event_side&.recalculate_caps!
   end
 
   def reactivate!
@@ -137,17 +145,34 @@ class ArmyList < ApplicationRecord
 
     prefetch_missing_cards
     broadcast_lock_updates
+    event_side&.recalculate_caps!
   rescue ActiveRecord::RecordNotUnique
     raise LockConflictError, "Jedna lub więcej miniatur została właśnie zajęta przez innego gracza. Sprawdź swoją listę."
   end
 
   private
 
+  def recalculate_side_caps
+    event_side&.recalculate_caps!
+  end
+
   def bonus_points_cannot_reduce_cap_below_one
     return unless event
 
     if effective_point_cap < 1
       errors.add(:bonus_points, "cannot reduce effective point cap below 1")
+    end
+  end
+
+  def event_side_must_belong_to_event
+    if event_side.event_id != event_id
+      errors.add(:event_side, "must belong to the same event")
+    end
+  end
+
+  def themed_event_requires_side
+    if event_side.nil?
+      errors.add(:event_side, "is required for themed events")
     end
   end
 

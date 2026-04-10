@@ -3,7 +3,89 @@ atlas_d_fedsuns:
   faction_id: 29
   faction_name: Federated Suns
 
+atlas_d_comstar:
+  variant: atlas_d
+  faction_id: 18
+  faction_name: ComStar
+
+commando_2d_fedsuns:
+  variant: commando_2d
+  faction_id: 29
+  faction_name: Federated Suns
+
+commando_2d_mercenary:
+  variant: commando_2d
+  faction_id: 34
+  faction_name: Mercenary
+
 timber_wolf_prime_clan_wolf:
   variant: timber_wolf_prime
   faction_id: 24
   faction_name: Clan Wolf
+
+timber_wolf_prime_jade_falcon:
+  variant: timber_wolf_prime
+  faction_id: 17
+  faction_name: Clan Jade Falcon
+
+timber_wolf_a_clan_wolf:
+  variant: timber_wolf_a
+  faction_id: 24
+  faction_name: Clan Wolf
+
+timber_wolf_a_jade_falcon:
+  variant: timber_wolf_a
+  faction_id: 17
+  faction_name: Clan Jade Falcon
+
+dire_wolf_prime_jade_falcon:
+  variant: dire_wolf_prime
+  faction_id: 17
+  faction_name: Clan Jade Falcon
+
+hunchback_4g_fedsuns:
+  variant: hunchback_4g
+  faction_id: 29
+  faction_name: Federated Suns
+
+hunchback_4g_comstar:
+  variant: hunchback_4g
+  faction_id: 18
+  faction_name: ComStar
+
+hunchback_4g_mercenary:
+  variant: hunchback_4g
+  faction_id: 34
+  faction_name: Mercenary
+
+hunchback_4g_draconis:
+  variant: hunchback_4g
+  faction_id: 25
+  faction_name: Draconis Combine
+
+hunchback_4p_fedsuns:
+  variant: hunchback_4p
+  faction_id: 29
+  faction_name: Federated Suns
+
+hunchback_4p_draconis:
+  variant: hunchback_4p
+  faction_id: 25
+  faction_name: Draconis Combine
+
+# Mixed tech variant: available to FedSuns and Mercenary
+bushwacker_x1_fedsuns:
+  variant: bushwacker_x1
+  faction_id: 29
+  faction_name: Federated Suns
+
+bushwacker_x1_mercenary:
+  variant: bushwacker_x1
+  faction_id: 34
+  faction_name: Mercenary
+
+# Unusable variant also has a faction (should still not appear)
+hunchback_zero_fedsuns:
+  variant: hunchback_zero
+  faction_id: 29
+  faction_name: Federated Suns

@@ -9,8 +9,8 @@
         </h1>
         <p class="text-hud-text-dim mt-1 text-sm">
           <%= I18n.l(@event.date, format: :long) %> &middot;
-          <%= @event.game_system_label %> &middot;
-          limit <%= @event.point_cap %> <%= @event.point_value_label %>
+          <%= @event.game_system_label %><% unless @event.themed? %> &middot;
+          limit <%= @event.point_cap %> <%= @event.point_value_label %><% end %>
         </p>
       </div>
       <span class="hud-stamp <%= case @event.status
@@ -22,15 +22,17 @@
       </span>
     </div>
 
-    <% if @event.event_era_restrictions.any? || @event.event_faction_restrictions.any? %>
+    <% show_eras = @event.event_era_restrictions.any? %>
+    <% show_factions = !@event.themed? && @event.event_faction_restrictions.any? %>
+    <% if show_eras || show_factions %>
       <div class="mt-4 pt-4" style="border-top: 1px dashed rgba(0, 255, 65, 0.15);">
-        <% if @event.event_era_restrictions.any? %>
+        <% if show_eras %>
           <p class="text-sm text-hud-text-dim">
             <span class="text-hud-text-muted uppercase text-xs tracking-wider">Ery:</span>
             <%= @event.event_era_restrictions.map(&:era_name).join(", ") %>
           </p>
         <% end %>
-        <% if @event.event_faction_restrictions.any? %>
+        <% if show_factions %>
           <p class="text-sm text-hud-text-dim mt-1">
             <span class="text-hud-text-muted uppercase text-xs tracking-wider">Frakcje:</span>
             <%= @event.event_faction_restrictions.map(&:faction_name).join(", ") %>
@@ -46,6 +48,29 @@
     <% end %>
   </div>
 
+  <%# === VS Banner for themed events === %>
+  <% if @event.themed? %>
+    <div class="bg-hud-bg-panel border border-hud-amber/40 rounded p-4 mb-6 hud-panel">
+      <div class="grid gap-4 items-center" style="grid-template-columns: <%= @event_sides.map { '1fr' }.join(' auto ') %>;">
+        <% @event_sides.each_with_index do |side, i| %>
+          <% if i > 0 %>
+            <div class="text-center">
+              <span class="font-hud-heading text-xl font-bold text-hud-amber" style="text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);">VS</span>
+            </div>
+          <% end %>
+          <div class="text-center">
+            <h3 class="font-hud-heading text-lg font-bold text-hud-green uppercase"><%= side.name %></h3>
+            <p class="text-sm text-hud-text-dim mt-1">
+              <%= side.point_cap %> <%= @event.point_value_label %> &middot;
+              <%= side.player_count %><%= side.max_players ? " / #{side.max_players}" : "" %> graczy
+            </p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# === Draft lists === %>
   <% if @my_drafts.any? %>
     <div class="mb-6">
       <h2 class="font-hud-heading text-lg font-semibold text-hud-amber mb-3 uppercase tracking-wider flex items-center gap-2">
@@ -59,6 +84,9 @@
             <div class="flex justify-between items-center">
               <div>
                 <span class="font-medium text-hud-amber"><%= draft.player_name %></span>
+                <% if @event.themed? && draft.event_side %>
+                  <span class="text-xs text-hud-text-muted ml-2">[<%= draft.event_side.name %>]</span>
+                <% end %>
                 <span class="text-sm text-hud-text-dim ml-2">
                   <%= draft.army_list_items.size %> jednostek &middot;
                   <%= draft.total_points %> / <%= draft.effective_point_cap %> <%= @event.point_value_label %><% if draft.bonus_points != 0 %>
@@ -74,6 +102,7 @@
     </div>
   <% end %>
 
+  <%# === Inactive lists === %>
   <% if @my_inactive.any? %>
     <div class="mb-6">
       <h2 class="font-hud-heading text-lg font-semibold text-hud-text-muted mb-3 uppercase tracking-wider">
@@ -86,6 +115,9 @@
             <div class="flex justify-between items-center">
               <div>
                 <span class="font-medium text-hud-text-muted"><%= list.player_name %></span>
+                <% if @event.themed? && list.event_side %>
+                  <span class="text-xs text-hud-text-dim ml-2">[<%= list.event_side.name %>]</span>
+                <% end %>
                 <span class="text-sm text-hud-text-dim ml-2">
                   <%= list.army_list_items.size %> jednostek &middot;
                   <%= list.total_points %> / <%= list.effective_point_cap %> <%= @event.point_value_label %><% if list.bonus_points != 0 %>
@@ -101,6 +133,7 @@
     </div>
   <% end %>
 
+  <%# === Create list button === %>
   <% if @event.status != "completed" %>
     <div class="mb-6">
       <%= link_to new_event_army_list_path(@event),
@@ -110,28 +143,79 @@
     </div>
   <% end %>
 
-  <% if @submitted_lists.any? %>
-    <h2 class="font-hud-heading text-xl font-semibold text-hud-green mb-4 uppercase tracking-wider">
-      Zgłoszone listy
-    </h2>
-    <div class="space-y-3">
-      <% @submitted_lists.each do |list| %>
-        <%= link_to event_army_list_path(@event, list),
-            class: "block bg-hud-bg-panel border border-hud-border rounded p-4 hover:border-hud-border-bright hover:bg-hud-bg-panel-hover transition no-underline" do %>
-          <div class="flex justify-between items-center">
-            <div>
-              <span class="font-medium text-hud-green"><%= list.player_name %></span>
-              <span class="text-sm text-hud-text-dim ml-2">
-                <%= list.army_list_items.size %> jednostek &middot;
-                <%= list.total_points %> <%= @event.point_value_label %>
-              </span>
+  <%# === Submitted lists === %>
+  <% if @event.themed? %>
+    <%# Themed: side-by-side columns %>
+    <% if @submitted_lists.any? || @event_sides.any? { |s| s.max_players.present? } %>
+      <h2 class="font-hud-heading text-xl font-semibold text-hud-green mb-4 uppercase tracking-wider">
+        Zgłoszone listy
+      </h2>
+      <%# grid-cols-1 on mobile, side count columns on md+ %>
+      <div class="grid grid-cols-1 gap-6 mb-6 <%= { 2 => 'md:grid-cols-2', 3 => 'md:grid-cols-3', 4 => 'md:grid-cols-4' }[@event_sides.size] %>">
+        <% @event_sides.each do |side| %>
+          <div>
+            <h3 class="font-hud-heading text-base font-semibold text-hud-green mb-3 uppercase tracking-wider">
+              <%= side.name %> &middot;
+              <span class="text-hud-text-dim font-normal normal-case"><%= side.per_player_point_cap %> <%= @event.point_value_label %> / gracz</span>
+            </h3>
+            <div class="space-y-3">
+              <% side_lists = @submitted_by_side[side.id] || [] %>
+              <% side_lists.each do |list| %>
+                <%= link_to event_army_list_path(@event, list),
+                    class: "block bg-hud-bg-panel border border-hud-border rounded p-4 hover:border-hud-border-bright hover:bg-hud-bg-panel-hover transition no-underline" do %>
+                  <div>
+                    <span class="font-medium text-hud-green"><%= list.player_name %></span>
+                    <span class="text-sm text-hud-text-dim ml-2">
+                      <%= list.army_list_items.size %> jednostek &middot;
+                      <%= list.total_points %> <%= @event.point_value_label %>
+                    </span>
+                  </div>
+                  <span class="text-xs text-hud-text-muted">
+                    Zgłoszono <%= time_ago_in_words(list.submitted_at) %> temu
+                  </span>
+                <% end %>
+              <% end %>
+              <% if side.max_players.present? %>
+                <% empty_slots = side.max_players - side.player_count %>
+                <% if empty_slots > 0 %>
+                  <div class="border border-dashed border-hud-border rounded p-4 text-center text-sm text-hud-text-muted">
+                    <%= empty_slots %> wolne <%= empty_slots == 1 ? "miejsce" : "miejsca" %>
+                  </div>
+                <% end %>
+              <% end %>
+              <% if side_lists.empty? && (side.max_players.nil? || side.max_players - side.player_count <= 0) %>
+                <p class="text-sm text-hud-text-muted italic">Brak zgłoszonych list</p>
+              <% end %>
             </div>
-            <span class="text-xs text-hud-text-muted">
-              Zgłoszono <%= time_ago_in_words(list.submitted_at) %> temu
-            </span>
           </div>
         <% end %>
-      <% end %>
-    </div>
+      </div>
+    <% end %>
+  <% else %>
+    <%# Standard: flat list %>
+    <% if @submitted_lists.any? %>
+      <h2 class="font-hud-heading text-xl font-semibold text-hud-green mb-4 uppercase tracking-wider">
+        Zgłoszone listy
+      </h2>
+      <div class="space-y-3">
+        <% @submitted_lists.each do |list| %>
+          <%= link_to event_army_list_path(@event, list),
+              class: "block bg-hud-bg-panel border border-hud-border rounded p-4 hover:border-hud-border-bright hover:bg-hud-bg-panel-hover transition no-underline" do %>
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="font-medium text-hud-green"><%= list.player_name %></span>
+                <span class="text-sm text-hud-text-dim ml-2">
+                  <%= list.army_list_items.size %> jednostek &middot;
+                  <%= list.total_points %> <%= @event.point_value_label %>
+                </span>
+              </div>
+              <span class="text-xs text-hud-text-muted">
+                Zgłoszono <%= time_ago_in_words(list.submitted_at) %> temu
+              </span>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
   <% end %>
 </div>

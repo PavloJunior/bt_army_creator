@@ -77,3 +77,105 @@ schrek_ppc_standard:
   era_id: 10
   era_name: Star League
   rules_level: Introductory
+
+# IS variant, multiple factions (FedSuns + ComStar + Mercenary)
+hunchback_4g:
+  chassis: hunchback
+  mul_id: 1560
+  name: Hunchback HBK-4G
+  variant_code: HBK-4G
+  battle_value: 1067
+  point_value: 28
+  tonnage: 50
+  unit_type: BattleMech
+  technology: Inner Sphere
+  role: Juggernaut
+  date_introduced: "2572"
+  era_id: 10
+  era_name: Star League
+  rules_level: Introductory
+
+# IS variant from Clan Invasion era
+hunchback_4p:
+  chassis: hunchback
+  mul_id: 1567
+  name: Hunchback HBK-4P
+  variant_code: HBK-4P
+  battle_value: 953
+  point_value: 24
+  tonnage: 50
+  unit_type: BattleMech
+  technology: Inner Sphere
+  role: Brawler
+  date_introduced: "3025"
+  era_id: 13
+  era_name: Clan Invasion
+  rules_level: Introductory
+
+# Clan variant, Jade Falcon only
+dire_wolf_prime:
+  chassis: dire_wolf
+  mul_id: 868
+  name: Dire Wolf (Daishi) Prime
+  variant_code: Prime
+  battle_value: 2999
+  point_value: 62
+  tonnage: 100
+  unit_type: BattleMech
+  technology: Clan
+  role: Juggernaut
+  date_introduced: "2010"
+  era_id: 10
+  era_name: Star League
+  rules_level: Standard
+
+# Clan variant, Clan Wolf + Jade Falcon (shared)
+timber_wolf_a:
+  chassis: timber_wolf
+  mul_id: 3153
+  name: Timber Wolf (Mad Cat) A
+  variant_code: A
+  battle_value: 2642
+  point_value: 50
+  tonnage: 75
+  unit_type: BattleMech
+  technology: Clan
+  role: Brawler
+  date_introduced: "2945"
+  era_id: 10
+  era_name: Star League
+  rules_level: Standard
+
+# Mixed tech variant — IS chassis with Clan tech upgrades
+bushwacker_x1:
+  chassis: bushwacker
+  mul_id: 8001
+  name: Bushwacker BSW-X1
+  variant_code: BSW-X1
+  battle_value: 1350
+  point_value: 38
+  tonnage: 55
+  unit_type: BattleMech
+  technology: Mixed
+  role: Skirmisher
+  date_introduced: "3060"
+  era_id: 13
+  era_name: Clan Invasion
+  rules_level: Standard
+
+# Unusable variant (0 PV, 0 BV) — should never appear
+hunchback_zero:
+  chassis: hunchback
+  mul_id: 88888
+  name: Hunchback HBK-TEST
+  variant_code: HBK-TEST
+  battle_value: 0
+  point_value: 0
+  tonnage: 50
+  unit_type: BattleMech
+  technology: Inner Sphere
+  role: Juggernaut
+  date_introduced: "2572"
+  era_id: 10
+  era_name: Star League
+  rules_level: Introductory

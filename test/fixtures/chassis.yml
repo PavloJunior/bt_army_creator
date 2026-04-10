@@ -24,3 +24,18 @@ schrek_ppc:
   unit_type: Vehicle
   tonnage: 80
   mini_group_id: shared-schrek-group
+
+hunchback:
+  name: Hunchback
+  unit_type: BattleMech
+  tonnage: 50
+
+dire_wolf:
+  name: Dire Wolf
+  unit_type: BattleMech
+  tonnage: 100
+
+bushwacker:
+  name: Bushwacker
+  unit_type: BattleMech
+  tonnage: 55

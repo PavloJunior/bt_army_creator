@@ -4,7 +4,7 @@ namespace :data do
     fixed = 0
 
     Chassis.find_each do |chassis|
-      type_counts = chassis.variants.where.not(unit_type: [nil, ""]).group(:unit_type).count
+      type_counts = chassis.variants.where.not(unit_type: [ nil, "" ]).group(:unit_type).count
       next if type_counts.size <= 1
 
       puts "\n#{"=" * 60}"

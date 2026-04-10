@@ -3,7 +3,32 @@ federated_suns:
   name: Federated Suns
   category: Inner Sphere
 
+draconis_combine:
+  mul_id: 25
+  name: Draconis Combine
+  category: Inner Sphere
+
+comstar:
+  mul_id: 18
+  name: ComStar
+  category: Other
+
+mercenary:
+  mul_id: 34
+  name: Mercenary
+  category: Other
+
 clan_wolf:
   mul_id: 24
   name: Clan Wolf
   category: Clan
+
+clan_jade_falcon:
+  mul_id: 17
+  name: Clan Jade Falcon
+  category: Clan
+
+taurian_concordat:
+  mul_id: 42
+  name: Taurian Concordat
+  category: Periphery

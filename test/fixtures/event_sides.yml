@@ -1,0 +1,12 @@
+comstar_side:
+  event: themed_event
+  name: ComStar Forces
+  point_cap: 300
+  max_players: 3
+  position: 1
+
+clan_side:
+  event: themed_event
+  name: Clan Invasion Force
+  point_cap: 300
+  position: 2

@@ -11,15 +11,16 @@
           <%= @army_list.player_name %>
         </h1>
         <div class="text-hud-text-dim mt-1 text-sm flex flex-wrap items-center gap-x-1 gap-y-1">
-          <span><%= @event.name %> · <%= @event.game_system_label %> ·</span>
+          <span><%= @event.name %><%= " · #{@army_list.event_side.name}" if @army_list.event_side %> · <%= @event.game_system_label %> ·</span>
           <% if @is_owner && @army_list.draft? %>
             <%= form_with url: change_tech_base_event_army_list_path(@event, @army_list),
                 method: :patch,
                 class: "inline-flex items-center gap-1",
                 data: { turbo: false, controller: "tech-base", tech_base_original_value: @army_list.tech_base } do %>
+              <% available_bases = @army_list.event_side ? @army_list.event_side.available_tech_bases : ArmyList::TECH_BASES %>
               <%= select_tag :tech_base,
                   options_for_select(
-                    [["Inner Sphere", "inner_sphere"], ["Clan", "clan"], ["Mixed", "mixed"]],
+                    available_bases.map { |b| [ArmyList::TECH_BASES_LABELS[b] || b.humanize, b] },
                     @army_list.tech_base
                   ),
                   class: "hud-select text-sm px-2 py-0.5 rounded",
@@ -286,7 +287,7 @@
           <div id="available_miniatures" data-view-toggle-target="container" class="items-start">
             <% faction_filter = @selected_faction_mul_ids.presence %>
             <% @chassis_data.each do |chassis, available_count, total_count| %>
-              <% variants = @event.available_variants_for_chassis(chassis, tech_base: @army_list.tech_base, faction_mul_ids: faction_filter) %>
+              <% variants = @event.available_variants_for_chassis(chassis, tech_base: @army_list.tech_base, faction_mul_ids: faction_filter, event_side: @army_list.event_side) %>
               <% next if variants.empty? && available_count > 0 %>
               <%= render partial: "chassis/available_chassis", locals: {
                 chassis: chassis, available_count: available_count, total_count: total_count,
