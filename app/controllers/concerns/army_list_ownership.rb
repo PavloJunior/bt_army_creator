@@ -27,6 +27,19 @@ module ArmyListOwnership
     }
   end
 
+  def remove_army_list_from_cookie(army_list)
+    ids = army_list_ids_from_cookie - [ army_list.id ]
+    if ids.any?
+      cookies.signed[:army_list_ids] = {
+        value: ids,
+        expires: (army_list.event.date + 1.day).end_of_day,
+        httponly: true
+      }
+    else
+      cookies.delete(:army_list_ids)
+    end
+  end
+
   def admin_signed_in?
     Current.session.present?
   rescue

@@ -384,6 +384,150 @@ class ArmyListsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to event_army_list_path(@event, @draft_list)
   end
 
+  # =========================================================================
+  # Destroy (owner-initiated cancellation)
+  # =========================================================================
+
+  test "owner can destroy a draft list" do
+    set_army_list_cookie([ @draft_list.id ])
+
+    assert_difference -> { ArmyList.count }, -1 do
+      delete event_army_list_path(@event, @draft_list)
+    end
+
+    assert_redirected_to event_path(@event)
+    assert flash[:notice].present?
+  end
+
+  test "owner can destroy a submitted list and its locks are released" do
+    @submitted_list.army_list_items.create!(
+      miniature: miniatures(:commando_mini),
+      variant: variants(:commando_2d),
+      skill: 4
+    )
+    MiniatureLock.create!(miniature: miniatures(:commando_mini), event: @event, army_list: @submitted_list)
+
+    set_army_list_cookie([ @submitted_list.id ])
+
+    assert_difference -> { MiniatureLock.where(event_id: @event.id).count }, -1 do
+      assert_difference -> { ArmyList.count }, -1 do
+        delete event_army_list_path(@event, @submitted_list)
+      end
+    end
+
+    assert_redirected_to event_path(@event)
+  end
+
+  test "owner can destroy an inactive list" do
+    set_army_list_cookie([ @inactive_list.id ])
+
+    assert_difference -> { ArmyList.count }, -1 do
+      delete event_army_list_path(@event, @inactive_list)
+    end
+
+    assert_redirected_to event_path(@event)
+  end
+
+  test "destroy requires ownership" do
+    assert_no_difference -> { ArmyList.count } do
+      delete event_army_list_path(@event, @draft_list)
+    end
+
+    assert_redirected_to event_path(@event)
+    assert flash[:alert].present?
+  end
+
+  test "destroy removes only the deleted list from the owner cookie" do
+    # The cookie expiration is tied to event.date, so use a future date here
+    # to ensure the rewritten cookie is still valid after the first delete.
+    @event.update!(date: Date.current + 30)
+    other = ArmyList.create!(
+      event: @event,
+      player_name: "Other Mine",
+      status: "draft",
+      tech_base: "mixed"
+    )
+    set_army_list_cookie([ @draft_list.id, other.id ])
+
+    delete event_army_list_path(@event, @draft_list)
+
+    # Ownership of the surviving list persists across requests via the cookie.
+    assert_difference -> { ArmyList.count }, -1 do
+      delete event_army_list_path(@event, other)
+    end
+    assert_redirected_to event_path(@event)
+  end
+
+  test "destroy on the last-owned list clears owner authorization" do
+    @event.update!(date: Date.current + 30)
+    other = ArmyList.create!(
+      event: @event,
+      player_name: "Other",
+      status: "draft",
+      tech_base: "mixed"
+    )
+    set_army_list_cookie([ @draft_list.id ])
+
+    delete event_army_list_path(@event, @draft_list)
+
+    # With the cookie cleared, we're no longer owner of anything else.
+    assert_no_difference -> { ArmyList.count } do
+      delete event_army_list_path(@event, other)
+    end
+    assert flash[:alert].present?
+  end
+
+  test "destroy on a themed-event side recalculates remaining list caps" do
+    themed_event = events(:themed_event)
+    themed_event.update!(status: "active")
+    side = event_sides(:comstar_side)
+
+    list1 = ArmyList.create!(event: themed_event, event_side: side, player_name: "P1", status: "draft", tech_base: "inner_sphere")
+    list1.army_list_items.create!(miniature: miniatures(:atlas_mini), variant: variants(:atlas_d), skill: 4)
+    list1.submit!
+
+    list2 = ArmyList.create!(event: themed_event, event_side: side, player_name: "P2", status: "draft", tech_base: "inner_sphere")
+    list2.army_list_items.create!(miniature: miniatures(:commando_mini), variant: variants(:commando_2d), skill: 4)
+    list2.submit!
+
+    # Two submitters share the cap — recalculating pushes list1 over its half,
+    # so deactivate on side recalc resets list1 to draft. Mirrors the existing
+    # deactivate-triggers-recalc test.
+    set_army_list_cookie([ list2.id ])
+    delete event_army_list_path(themed_event, list2)
+
+    assert_redirected_to event_path(themed_event)
+    assert list1.reload.draft?
+    assert_raises(ActiveRecord::RecordNotFound) { list2.reload }
+  end
+
+  test "shared list: participant without army_list_ids cookie cannot destroy" do
+    shared_event = events(:shared_event)
+    list = shared_event.shared_army_list_record
+    alice = list.shared_participants.create!(display_name: "Alice")
+    set_participant_cookie([ alice.token ])
+
+    assert_no_difference -> { ArmyList.count } do
+      delete event_army_list_path(shared_event, list)
+    end
+
+    assert_redirected_to event_path(shared_event)
+    assert list.reload.persisted?
+  end
+
+  test "destroy survives a repeat DELETE with a stale cookie" do
+    # Two browser tabs, same owner, both issue DELETE. The second tab sees a
+    # 404 under the hood but gets redirected to the event page gracefully
+    # instead of an ugly error.
+    set_army_list_cookie([ @draft_list.id ])
+    delete event_army_list_path(@event, @draft_list)
+    assert_redirected_to event_path(@event)
+
+    delete event_army_list_path(@event, @draft_list)
+    assert_redirected_to event_path(@event)
+    assert flash[:alert].present?
+  end
+
   private
 
   def set_army_list_cookie(ids)

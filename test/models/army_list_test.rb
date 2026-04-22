@@ -2,6 +2,21 @@ require "test_helper"
 
 class ArmyListTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
+
+  # Records the `stream` argument of every Turbo::StreamsChannel.broadcast_refresh_to
+  # call made during the block, so tests can assert which channels received a refresh.
+  def capture_turbo_refresh_streams
+    streams = []
+    original = Turbo::StreamsChannel.method(:broadcast_refresh_to)
+    Turbo::StreamsChannel.define_singleton_method(:broadcast_refresh_to) do |stream, **opts|
+      streams << stream
+      original.call(stream, **opts)
+    end
+    yield
+    streams
+  ensure
+    Turbo::StreamsChannel.singleton_class.send(:remove_method, :broadcast_refresh_to)
+  end
   test "total_points for alpha_strike reflects skill adjustments" do
     list = army_lists(:draft_list)
     assert_equal "alpha_strike", list.event.game_system
@@ -438,6 +453,99 @@ class ArmyListTest < ActiveSupport::TestCase
 
     assert_raises(ArmyList::LockConflictError) { list.submit! }
   end
+
+  # =========================================================================
+  # Destroy / cancellation
+  # =========================================================================
+
+  test "destroy releases miniature locks for a submitted list" do
+    list = army_lists(:draft_list)
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+    list.submit!
+    assert_equal 1, list.miniature_locks.count
+    event_id = list.event_id
+
+    assert_difference -> { MiniatureLock.where(event_id: event_id).count }, -1 do
+      list.destroy!
+    end
+  end
+
+  test "destroy cascades items and factions on a non-shared list" do
+    list = army_lists(:draft_list)
+    list.army_list_factions.create!(faction_mul_id: 29)
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+
+    assert_difference -> { ArmyListItem.count }, -1 do
+      assert_difference -> { ArmyListFaction.count }, -1 do
+        list.destroy!
+      end
+    end
+  end
+
+  test "destroy cascades shared participants and messages" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    list.shared_messages.create!(
+      participant: alice,
+      sender_name: alice.display_name,
+      body: "hi"
+    )
+
+    assert_difference -> { SharedArmyListParticipant.count }, -1 do
+      assert_difference -> { SharedArmyListMessage.count }, -1 do
+        list.destroy!
+      end
+    end
+  end
+
+  test "destroy on a themed-event side recalculates the remaining list's cap" do
+    themed_event = events(:themed_event)
+    themed_event.update!(status: "active")
+    side = event_sides(:comstar_side)
+
+    list1 = ArmyList.create!(event: themed_event, event_side: side, player_name: "Player 1", status: "draft", tech_base: "inner_sphere")
+    list2 = ArmyList.create!(event: themed_event, event_side: side, player_name: "Player 2", status: "draft", tech_base: "inner_sphere")
+
+    # Two players share the cap
+    shared_cap = list1.reload.effective_point_cap
+    assert shared_cap < side.point_cap
+
+    list2.destroy!
+
+    # Only one player left → full cap
+    assert_equal side.point_cap, list1.reload.effective_point_cap
+  end
+
+  test "destroy broadcasts refresh to the event miniatures channel" do
+    list = army_lists(:draft_list)
+    event_id = list.event_id
+    streams = capture_turbo_refresh_streams { list.destroy! }
+    assert_includes streams, "event_#{event_id}_miniatures"
+  end
+
+  test "destroy on a non-shared list does not broadcast to any shared channel" do
+    list = army_lists(:draft_list)
+    list_id = list.id
+    streams = capture_turbo_refresh_streams { list.destroy! }
+    assert_not_includes streams, "shared_army_list_#{list_id}"
+  end
+
+  test "destroy on a shared list also broadcasts to the shared channel" do
+    list = army_lists(:shared_list)
+    list_id = list.id
+    streams = capture_turbo_refresh_streams { list.destroy! }
+    assert_includes streams, "shared_army_list_#{list_id}"
+  end
+
+  # =========================================================================
 
   test "submit! on shared list succeeds when all participants accepted" do
     list = army_lists(:shared_list)

@@ -55,7 +55,7 @@ class EventSide < ApplicationRecord
   # exclusion (e.g., IS tech base excludes "Clan" technology).
   def detect_tech_bases
     side_faction_ids = event_side_factions.pluck(:faction_mul_id)
-    return [] if side_faction_ids.empty?
+    return ArmyList::TECH_BASES.dup if side_faction_ids.empty?
 
     era_ids = event.event_era_restrictions.any? ? event.event_era_restrictions.pluck(:era_mul_id) : nil
     pv_column = Variant.arel_table[event.point_value_method]

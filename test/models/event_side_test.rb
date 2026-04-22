@@ -223,11 +223,11 @@ class EventSideTest < ActiveSupport::TestCase
     assert_includes bases, "mixed"
   end
 
-  test "available_tech_bases returns empty for side with no factions" do
+  test "available_tech_bases returns all tech bases for unrestricted side with no factions" do
     event = events(:themed_event)
     empty_side = event.event_sides.create!(name: "Empty", point_cap: 100, position: 3)
 
-    assert_equal [], empty_side.available_tech_bases
+    assert_equal ArmyList::TECH_BASES, empty_side.available_tech_bases
   end
 
   # --- allowed_tech_bases override ---

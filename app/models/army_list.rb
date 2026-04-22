@@ -26,6 +26,7 @@ class ArmyList < ApplicationRecord
   validate :themed_event_requires_side, if: -> { event&.themed? }
 
   after_destroy :recalculate_side_caps
+  after_destroy_commit :broadcast_destruction
 
   def selected_faction_mul_ids
     ids = army_list_factions.pluck(:faction_mul_id)
@@ -218,5 +219,10 @@ class ArmyList < ApplicationRecord
     # Can't render per-user partials in a broadcast (each viewer has their own army_list),
     # so trigger a full page refresh for all subscribers instead.
     Turbo::StreamsChannel.broadcast_refresh_to("event_#{event_id}_miniatures")
+  end
+
+  def broadcast_destruction
+    Turbo::StreamsChannel.broadcast_refresh_to("event_#{event_id}_miniatures")
+    Turbo::StreamsChannel.broadcast_refresh_to("shared_army_list_#{id}") if shared?
   end
 end

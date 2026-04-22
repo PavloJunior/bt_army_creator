@@ -418,13 +418,13 @@ class EventTest < ActiveSupport::TestCase
     assert_includes result_no_filter, orphan, "Variant with no factions included when no faction filtering"
   end
 
-  test "edge case: empty side factions returns nothing" do
+  test "edge case: empty side factions is treated as unrestricted" do
     event = events(:themed_event)
     empty_side = event.event_sides.create!(name: "Empty Side", point_cap: 100, position: 3)
-    # No event_side_factions added
+    # No event_side_factions added — side has no restrictions
 
     result = event.available_variants_for_chassis(chassis(:atlas), event_side: empty_side)
-    assert_empty result
+    assert_not_empty result, "An unrestricted side should behave like no side filter"
   end
 
   test "edge case: all era restrictions exclude everything" do

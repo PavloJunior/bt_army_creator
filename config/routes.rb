@@ -52,7 +52,7 @@ Rails.application.routes.draw do
   root to: "events#index"
 
   resources :events, only: [ :index, :show ] do
-    resources :army_lists, only: [ :new, :create, :show, :edit, :update ] do
+    resources :army_lists, only: [ :new, :create, :show, :edit, :update, :destroy ] do
       member do
         patch :submit
         patch :deactivate

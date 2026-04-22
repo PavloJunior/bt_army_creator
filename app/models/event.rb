@@ -49,9 +49,11 @@ class Event < ApplicationRecord
     end
 
     faction_filter_ids = nil
+    side_faction_ids = event_side&.event_side_factions&.pluck(:faction_mul_id)
+    side_has_factions = side_faction_ids.present?
 
-    if event_side
-      faction_filter_ids = event_side.event_side_factions.pluck(:faction_mul_id)
+    if side_has_factions
+      faction_filter_ids = side_faction_ids
     elsif event_faction_restrictions.any?
       faction_filter_ids = event_faction_restrictions.pluck(:faction_mul_id)
     end
@@ -61,8 +63,9 @@ class Event < ApplicationRecord
       scope = scope.where.not(technology: excluded_tech) if excluded_tech
 
       # For themed events, side factions define the scope — don't further
-      # restrict by tech-base faction mapping (a Clan faction can field IS-tech units)
-      unless event_side
+      # restrict by tech-base faction mapping (a Clan faction can field IS-tech units).
+      # An unrestricted side (no event_side_factions) falls through to the tech-base mapping.
+      unless side_has_factions
         tech_ids = Faction.for_tech_base(tech_base).pluck(:mul_id)
         faction_filter_ids = faction_filter_ids ? (faction_filter_ids & tech_ids) : tech_ids
       end

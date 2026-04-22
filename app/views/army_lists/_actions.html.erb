@@ -86,4 +86,29 @@
           data: { action: "click->confirm-modal#show" } %>
     </div>
   <% end %>
+
+  <%# Cancel (delete) the whole list. Hidden for shared lists — those are
+      managed at the event level, not by a single cookie owner. Confirm copy
+      varies by status: submitted lists release reservations when cancelled. %>
+  <% if is_owner && !army_list.shared? %>
+    <% cancel_message = if army_list.submitted?
+         "Anulować tę listę? Lista <span class='text-hud-amber'>zostanie trwale usunięta</span>, a rezerwacje modeli zwolnione."
+       else
+         "Anulować tę listę? Lista <span class='text-hud-amber'>zostanie trwale usunięta</span> wraz ze wszystkimi jednostkami."
+       end %>
+    <div class="mt-4">
+      <%= button_to "Anuluj listę",
+          event_army_list_path(event, army_list),
+          method: :delete,
+          class: "py-2 px-4 hud-btn-danger rounded text-xs cursor-pointer",
+          form: { data: {
+            controller: "confirm-modal",
+            confirm_modal_title_value: "Anuluj listę",
+            confirm_modal_message_value: cancel_message,
+            confirm_modal_confirm_value: "Anuluj listę",
+            confirm_modal_cancel_value: "Wróć"
+          } },
+          data: { action: "click->confirm-modal#show" } %>
+    </div>
+  <% end %>
 </div>

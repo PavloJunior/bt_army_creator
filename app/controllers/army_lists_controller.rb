@@ -4,8 +4,9 @@ class ArmyListsController < ApplicationController
 
   before_action :set_event
   before_action :redirect_to_shared_list_on_shared_event, only: [ :new, :create ]
-  before_action :set_army_list, only: [ :show, :edit, :update, :submit, :deactivate, :reactivate, :change_tech_base, :toggle_faction, :clear, :clear_mine, :print_cards, :print_cards_ready ]
+  before_action :set_army_list, only: [ :show, :edit, :update, :submit, :deactivate, :reactivate, :change_tech_base, :toggle_faction, :clear, :clear_mine, :print_cards, :print_cards_ready, :destroy ]
   before_action :authorize_list_access!, only: [ :edit, :update, :submit, :deactivate, :reactivate, :change_tech_base, :toggle_faction, :clear, :clear_mine ]
+  before_action :authorize_army_list!, only: [ :destroy ]
   before_action :require_active_event!, only: [ :submit, :deactivate, :reactivate ]
   before_action :refuse_on_shared_list, only: [ :change_tech_base, :toggle_faction, :clear ]
 
@@ -92,11 +93,11 @@ class ArmyListsController < ApplicationController
       @is_owner = owner_of_army_list?(@army_list) || admin_signed_in?
     end
 
-    if @army_list.event_side
-      side_faction_ids = @army_list.event_side.event_side_factions.pluck(:faction_mul_id)
-      @sidebar_factions = Faction.where(mul_id: side_faction_ids).order(:name).group_by(&:category)
+    side_faction_ids = @army_list.event_side&.event_side_factions&.pluck(:faction_mul_id)
+    @sidebar_factions = if side_faction_ids.present?
+      Faction.where(mul_id: side_faction_ids).order(:name).group_by(&:category)
     else
-      @sidebar_factions = Faction.for_sidebar(@army_list.tech_base)
+      Faction.for_sidebar(@army_list.tech_base)
     end
     @selected_faction_mul_ids = @army_list.army_list_factions.pluck(:faction_mul_id)
   end
@@ -244,6 +245,12 @@ class ArmyListsController < ApplicationController
     redirect_to event_army_list_path(@event, @army_list), alert: e.message
   end
 
+  def destroy
+    @army_list.destroy!
+    remove_army_list_from_cookie(@army_list)
+    redirect_to event_path(@event), notice: "Lista została anulowana."
+  end
+
   private
 
   def set_event
@@ -252,6 +259,8 @@ class ArmyListsController < ApplicationController
 
   def set_army_list
     @army_list = @event.army_lists.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to event_path(@event), alert: "Ta lista nie jest już dostępna."
   end
 
   def redirect_to_shared_list_on_shared_event
