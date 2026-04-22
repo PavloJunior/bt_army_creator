@@ -1,8 +1,15 @@
 <%= turbo_stream_from "event_#{@event.id}_miniatures" %>
+<% if @army_list.shared? %>
+  <%= turbo_stream_from "shared_army_list_#{@army_list.id}" %>
+<% end %>
 <% content_for(:status_context) { "BUDOWANIE LISTY // #{@army_list.player_name.upcase}" } %>
 <%= specials_data_tag %>
 
-<div class="max-w-6xl mx-auto">
+<div class="max-w-6xl mx-auto"
+  <% if @army_list.shared? %>
+     data-controller="shared-visibility"
+     data-shared-visibility-current-participant-id-value="<%= @shared_viewer_id_value %>"
+  <% end %>>
   <%# Army Status Banner %>
   <div class="bg-hud-bg-panel border border-hud-border rounded p-5 mb-6 hud-panel hud-blueprint-grid hud-watermark-mech">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
@@ -12,7 +19,7 @@
         </h1>
         <div class="text-hud-text-dim mt-1 text-sm flex flex-wrap items-center gap-x-1 gap-y-1">
           <span><%= @event.name %><%= " · #{@army_list.event_side.name}" if @army_list.event_side %> · <%= @event.game_system_label %> ·</span>
-          <% if @is_owner && @army_list.draft? %>
+          <% if @is_owner && @army_list.draft? && !@army_list.shared? %>
             <%= form_with url: change_tech_base_event_army_list_path(@event, @army_list),
                 method: :patch,
                 class: "inline-flex items-center gap-1",
@@ -64,9 +71,29 @@
     </div>
   <% end %>
 
+  <%# Shared list panels %>
+  <% if @army_list.shared? %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <%= render partial: "shared_army_lists/participant_roster",
+          locals: { army_list: @army_list, event: @event } %>
+      <div class="space-y-3">
+        <%= render partial: "shared_army_lists/acceptance_banner",
+            locals: { army_list: @army_list, event: @event } %>
+        <%= render partial: "shared_army_lists/self_acceptance_button",
+            locals: { army_list: @army_list, event: @event, current_participant: @current_participant } %>
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <%= render partial: "shared_army_list_messages/chat",
+          locals: { event: @event, messages: @shared_messages, current_participant: @current_participant } %>
+    </div>
+  <% end %>
+
   <%# Tabbed interface (draft only) %>
   <% if @army_list.draft? %>
-    <div class="lg:grid lg:grid-cols-[260px_1fr] lg:gap-6">
+    <div class="<%= @army_list.shared? ? '' : 'lg:grid lg:grid-cols-[260px_1fr] lg:gap-6' %>">
+    <% unless @army_list.shared? %>
     <%# Faction Sidebar %>
     <aside class="hidden lg:block">
       <%= render "army_lists/faction_sidebar",
@@ -75,6 +102,7 @@
           event: @event,
           army_list: @army_list %>
     </aside>
+    <% end %>
 
     <div>
     <div data-controller="tab-switch" data-tab-switch-default-value="browser">
@@ -118,8 +146,8 @@
            data-controller="unit-type-filter chassis-browser"
            data-chassis-browser-point-cap-value="<%= @army_list.effective_point_cap %>"
            data-chassis-browser-army-list-id-value="<%= @army_list.id %>">
-        <%# Mobile faction filter %>
-        <div class="lg:hidden mb-4">
+        <%# Mobile faction filter — hidden for shared lists (admin controls factions at event level) %>
+        <div class="lg:hidden mb-4 <%= 'hidden' if @army_list.shared? %>">
           <div class="bg-hud-bg-panel border border-hud-border rounded p-3 space-y-3">
             <div>
               <h3 class="text-xs text-hud-text-muted uppercase tracking-wider mb-2 font-hud-heading">Podfrakcja</h3>

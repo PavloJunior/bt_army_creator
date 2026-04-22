@@ -8,6 +8,11 @@
     </p>
   </div>
   <div class="flex items-center gap-3">
+    <% if @event.shared_army_list? %>
+      <span class="hud-stamp hud-stamp-green">Shared</span>
+    <% elsif @event.themed? %>
+      <span class="hud-stamp hud-stamp-amber">Themed</span>
+    <% end %>
     <span class="hud-stamp <%= case @event.status
           when 'upcoming' then 'hud-stamp-green'
           when 'active' then 'hud-stamp-amber'
@@ -71,6 +76,36 @@
       <p class="text-sm text-hud-text-dim mt-1">
         <span class="font-medium text-hud-green">Factions:</span>
         <%= @event.event_faction_restrictions.map(&:faction_name).join(", ") %>
+      </p>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @event.shared_army_list? && (list = @event.shared_army_list_record) %>
+  <div class="bg-hud-bg-panel border border-hud-green/40 rounded p-4 mb-6">
+    <h3 class="text-sm font-medium text-hud-green uppercase tracking-wider mb-2">Shared Army List</h3>
+    <% active = list.active_participants.order(:id) %>
+    <% accepted = active.where.not(accepted_at: nil).count %>
+    <p class="text-sm text-hud-text-dim">
+      <span class="text-hud-text-muted">Tech base:</span> <%= list.tech_base_label %> &middot;
+      <span class="text-hud-text-muted">Status:</span>
+      <span class="<%= { 'draft' => 'text-hud-amber', 'submitted' => 'text-hud-green', 'inactive' => 'text-hud-text-muted' }[list.status] %>">
+        <%= list.status.capitalize %>
+      </span>
+      &middot;
+      <span class="text-hud-text-muted">Participants:</span> <%= active.count %>
+      &middot;
+      <span class="text-hud-text-muted">Accepted:</span>
+      <span class="<%= list.all_accepted? ? 'text-hud-green' : 'text-hud-text' %>">
+        <%= accepted %> / <%= active.count %>
+      </span>
+      &middot;
+      <span class="text-hud-text-muted">Points:</span> <%= list.total_points %> / <%= list.effective_point_cap %> <%= @event.point_value_label %>
+    </p>
+    <% if active.any? %>
+      <p class="text-xs text-hud-text-muted mt-2">
+        <span class="uppercase tracking-wider">Active:</span>
+        <%= active.map { |p| "#{p.display_name}#{p.accepted? ? ' ✓' : ''}" }.join(", ") %>
       </p>
     <% end %>
   </div>

@@ -51,6 +51,26 @@
     <span class="text-xs text-hud-text-muted">(Sides with separate point caps and factions)</span>
   </div>
 
+  <%# Shared army list toggle %>
+  <div class="flex items-center gap-2">
+    <%= form.check_box :shared_army_list, class: "hud-checkbox rounded",
+        data: { shared_checkbox: true, action: "themed-event#toggle" } %>
+    <%= form.label :shared_army_list, "Shared Army List (co-op)", class: "text-sm font-medium text-hud-text-dim" %>
+    <span class="text-xs text-hud-text-muted">(Single list edited collaboratively by all players)</span>
+  </div>
+
+  <div data-themed-event-target="sharedTechBaseField" class="<%= "hidden" unless event.shared_army_list? %>">
+    <%= form.label :shared_tech_base, "Shared Tech Base", class: "block text-sm font-medium text-hud-text-dim mb-1" %>
+    <% current_tech_base = event.shared_tech_base.presence || event.shared_army_list_record&.tech_base || "mixed" %>
+    <%= form.select :shared_tech_base,
+        ArmyList::TECH_BASES.map { |tb| [ArmyList::TECH_BASES_LABELS[tb], tb] },
+        { selected: current_tech_base },
+        class: "w-full px-3 py-2 hud-select rounded" %>
+    <p class="text-xs text-hud-text-muted mt-1">
+      Admin chooses the tech base for shared lists. Players cannot change it.
+    </p>
+  </div>
+
   <% if eras.any? %>
     <fieldset>
       <legend class="text-sm font-medium text-hud-text-dim mb-2">Era restrictions (leave empty for no restriction)</legend>

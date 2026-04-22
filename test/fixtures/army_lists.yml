@@ -17,3 +17,9 @@ inactive_list:
   status: inactive
   submitted_at: 2026-03-10 12:00:00
   tech_base: mixed
+
+shared_list:
+  event: shared_event
+  player_name: "Shared Force — Scouring Sands Campaign"
+  status: draft
+  tech_base: inner_sphere

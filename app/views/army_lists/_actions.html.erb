@@ -1,22 +1,47 @@
-<div id="army_list_actions">
+<%# On shared lists this partial is broadcast with is_owner:true so that
+    all participants see the action chrome. The shared-visibility controller
+    hides it from spectators by requiring a non-empty viewer participant id
+    (admins match via the "admin" sentinel). data-added-by-participant-id=""
+    marks this as unclaimed — any participant matches, a spectator does not. %>
+<div id="army_list_actions"<%= ' data-added-by-participant-id=""'.html_safe if army_list.shared? %>>
   <% if is_owner && army_list.draft? && army_list.army_list_items.any? %>
-    <div class="mt-6 flex gap-3">
-      <%= button_to "Wyczyść",
-          clear_event_army_list_path(event, army_list),
-          method: :delete,
-          class: "py-3 px-6 hud-btn-danger rounded text-sm cursor-pointer",
-          form: { data: {
-            controller: "confirm-modal",
-            confirm_modal_title_value: "Wyczyść listę",
-            confirm_modal_message_value: "Usunąć <span class='text-hud-amber'>wszystkie jednostki</span> z listy?",
-            confirm_modal_confirm_value: "Wyczyść",
-            confirm_modal_cancel_value: "Anuluj"
-          } },
-          data: { action: "click->confirm-modal#show" } %>
+    <div class="mt-6 flex gap-3"<%= ' data-shared-visibility-target="ownerOnly"'.html_safe if army_list.shared? %>>
+      <% if army_list.shared? %>
+        <%# Clear only the current viewer's own units — not the whole list.
+            Rendered for every participant; the server enforces ownership. %>
+        <%= button_to "Wyczyść moje",
+            clear_mine_event_army_list_path(event, army_list),
+            method: :delete,
+            class: "py-3 px-6 hud-btn-danger rounded text-sm cursor-pointer",
+            form: { data: {
+              controller: "confirm-modal",
+              confirm_modal_title_value: "Wyczyść moje jednostki",
+              confirm_modal_message_value: "Usunąć <span class='text-hud-amber'>wszystkie Twoje jednostki</span> z listy? Jednostki innych graczy pozostaną.",
+              confirm_modal_confirm_value: "Wyczyść",
+              confirm_modal_cancel_value: "Anuluj"
+            } },
+            data: { action: "click->confirm-modal#show" } %>
+      <% else %>
+        <%= button_to "Wyczyść",
+            clear_event_army_list_path(event, army_list),
+            method: :delete,
+            class: "py-3 px-6 hud-btn-danger rounded text-sm cursor-pointer",
+            form: { data: {
+              controller: "confirm-modal",
+              confirm_modal_title_value: "Wyczyść listę",
+              confirm_modal_message_value: "Usunąć <span class='text-hud-amber'>wszystkie jednostki</span> z listy?",
+              confirm_modal_confirm_value: "Wyczyść",
+              confirm_modal_cancel_value: "Anuluj"
+            } },
+            data: { action: "click->confirm-modal#show" } %>
+      <% end %>
+      <% submit_blocked = army_list.shared? && !army_list.all_accepted? %>
       <%= button_to "Potwierdź listę",
           submit_event_army_list_path(event, army_list),
           method: :patch,
-          class: "flex-1 py-3 px-6 hud-btn-primary rounded text-sm cursor-pointer",
+          disabled: submit_blocked,
+          class: "flex-1 py-3 px-6 hud-btn-primary rounded text-sm #{submit_blocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}",
+          title: (submit_blocked ? "Wszyscy uczestnicy muszą zaakceptować listę" : nil),
           form: { data: {
             controller: "confirm-modal",
             confirm_modal_title_value: "Potwierdź listę",
@@ -29,7 +54,7 @@
   <% end %>
 
   <% if is_owner && army_list.submitted? %>
-    <div class="mt-6 flex gap-3">
+    <div class="mt-6 flex gap-3"<%= ' data-shared-visibility-target="ownerOnly"'.html_safe if army_list.shared? %>>
       <%= button_to "Dezaktywuj listę",
           deactivate_event_army_list_path(event, army_list),
           method: :patch,
@@ -46,7 +71,7 @@
   <% end %>
 
   <% if is_owner && army_list.inactive? %>
-    <div class="mt-6 flex gap-3">
+    <div class="mt-6 flex gap-3"<%= ' data-shared-visibility-target="ownerOnly"'.html_safe if army_list.shared? %>>
       <%= button_to "Reaktywuj listę",
           reactivate_event_army_list_path(event, army_list),
           method: :patch,

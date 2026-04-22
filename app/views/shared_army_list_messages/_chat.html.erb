@@ -1,0 +1,27 @@
+<div class="bg-hud-bg-panel border border-hud-border rounded p-4 flex flex-col"
+     data-controller="shared-chat">
+  <h2 class="font-hud-heading text-sm text-hud-text-dim uppercase tracking-wider mb-3">
+    Czat
+  </h2>
+
+  <div class="relative mb-3">
+    <div id="shared_chat_messages"
+         data-shared-chat-target="messages"
+         class="space-y-2 max-h-72 overflow-y-auto pr-1">
+      <% messages.each do |message| %>
+        <%= render partial: "shared_army_list_messages/message",
+            locals: { message: message, event: event } %>
+      <% end %>
+    </div>
+    <%# Empty state lives OUTSIDE the broadcast target so newly appended
+        messages don't render next to a stale "no messages" placeholder.
+        Stimulus toggles visibility based on the message count. %>
+    <p data-shared-chat-target="emptyState"
+       class="text-sm text-hud-text-muted italic <%= 'hidden' unless messages.empty? %>">
+      Brak wiadomości. Powiedz coś!
+    </p>
+  </div>
+
+  <%= render partial: "shared_army_list_messages/form",
+      locals: { event: event, current_participant: current_participant } %>
+</div>

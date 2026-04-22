@@ -1,5 +1,6 @@
 class EventsController < ApplicationController
   include ArmyListOwnership
+  include SharedParticipantAuth
 
   def index
     @upcoming_events = Event.upcoming.order(:date)
@@ -20,6 +21,11 @@ class EventsController < ApplicationController
     if @event.themed?
       @event_sides = @event.event_sides.includes(:event_side_factions)
       @submitted_by_side = @submitted_lists.group_by(&:event_side_id)
+    end
+
+    if @event.shared_army_list?
+      @shared_army_list = @event.shared_army_list_record
+      @shared_current_participant = current_participant(@shared_army_list) if @shared_army_list
     end
   end
 

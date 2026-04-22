@@ -19,3 +19,11 @@ themed_event:
   point_cap: 600
   status: upcoming
   themed: true
+
+shared_event:
+  name: Scouring Sands Campaign
+  date: 2026-06-15
+  game_system: alpha_strike
+  point_cap: 400
+  status: upcoming
+  shared_army_list: true

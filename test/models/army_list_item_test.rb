@@ -1,6 +1,8 @@
 require "test_helper"
 
 class ArmyListItemTest < ActiveSupport::TestCase
+  include ActionCable::TestHelper
+
   setup do
     @item = ArmyListItem.new(
       army_list: army_lists(:draft_list),
@@ -192,5 +194,148 @@ class ArmyListItemTest < ActiveSupport::TestCase
 
     # Atlas PV 52 > base cap 50, but effective cap is 70
     assert_not item.exceeds_point_cap?
+  end
+
+  # =========================================================================
+  # Shared list behaviour
+  # =========================================================================
+
+  test "added_by_participant association is optional on non-shared lists" do
+    item = army_lists(:draft_list).army_list_items.new(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d)
+    )
+    assert item.valid?
+    assert_nil item.added_by_participant
+  end
+
+  test "can associate an ArmyListItem with a SharedArmyListParticipant" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    item = list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      added_by_participant: alice
+    )
+    assert_equal alice, item.reload.added_by_participant
+  end
+
+  test "creating an item on a shared list resets active participants' acceptances" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    bob = list.shared_participants.create!(display_name: "Bob")
+    alice.accept!
+    bob.accept!
+
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      added_by_participant: alice
+    )
+
+    assert_nil alice.reload.accepted_at, "Alice's acceptance should be cleared"
+    assert_nil bob.reload.accepted_at, "Bob's acceptance should be cleared"
+  end
+
+  test "destroying an item on a shared list resets active participants' acceptances" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    bob = list.shared_participants.create!(display_name: "Bob")
+    item = list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      added_by_participant: alice
+    )
+    alice.accept!
+    bob.accept!
+
+    item.destroy!
+
+    assert_nil alice.reload.accepted_at
+    assert_nil bob.reload.accepted_at
+  end
+
+  test "updating skill on a shared list resets active participants' acceptances" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    bob = list.shared_participants.create!(display_name: "Bob")
+    item = list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4,
+      added_by_participant: alice
+    )
+    alice.accept!
+    bob.accept!
+
+    item.update!(skill: 3)
+
+    assert_nil alice.reload.accepted_at
+    assert_nil bob.reload.accepted_at
+  end
+
+  test "items on non-shared lists do not touch participant acceptances" do
+    list = army_lists(:draft_list)
+    # Should not explode even though there are no shared_participants.
+    assert_nothing_raised do
+      list.army_list_items.create!(
+        miniature: miniatures(:atlas_mini),
+        variant: variants(:atlas_d)
+      )
+    end
+  end
+
+  test "creating an item on a shared list broadcasts the full set of DOM updates" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+
+    # Expected broadcasts on create:
+    # 1. append item → #army_list_items
+    # 2. replace #point_total
+    # 3. update #army_item_count
+    # 4. replace #army_list_actions
+    # 5. replace #shared_acceptance_banner
+    # 6. replace #shared_participant_roster
+    # 7. replace #available_chassis_{chassis.id}
+    assert_broadcasts "shared_army_list_#{list.id}", 7 do
+      list.army_list_items.create!(
+        miniature: miniatures(:atlas_mini),
+        variant: variants(:atlas_d),
+        added_by_participant: alice
+      )
+    end
+  end
+
+  test "destroying an item on a shared list broadcasts the full set of DOM updates" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    item = list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      added_by_participant: alice
+    )
+
+    # Expected broadcasts on destroy:
+    # 1. remove #army_list_item_{id}
+    # 2. replace #point_total
+    # 3. update #army_item_count
+    # 4. replace #army_list_actions
+    # 5. replace #shared_acceptance_banner
+    # 6. replace #shared_participant_roster
+    # 7. replace #available_chassis_{chassis.id}
+    assert_broadcasts "shared_army_list_#{list.id}", 7 do
+      item.destroy!
+    end
+  end
+
+  test "items on non-shared lists do not broadcast on the shared stream" do
+    list = army_lists(:draft_list)
+
+    assert_no_broadcasts "shared_army_list_#{list.id}" do
+      list.army_list_items.create!(
+        miniature: miniatures(:atlas_mini),
+        variant: variants(:atlas_d)
+      )
+    end
   end
 end

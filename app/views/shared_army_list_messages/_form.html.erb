@@ -1,0 +1,24 @@
+<%# Wrapped in a replaceable target so the controller can reset the input
+    and surface validation errors via Turbo Streams without reloading the page. %>
+<div id="shared_chat_form" data-shared-chat-target="formWrapper">
+  <% if current_participant.present? %>
+    <%= form_with url: event_shared_army_list_shared_messages_path(event),
+        scope: :shared_army_list_message,
+        class: "flex gap-2",
+        data: { action: "submit->shared-chat#submit" } do |f| %>
+      <%= f.text_field :body,
+          maxlength: 2000,
+          placeholder: "Napisz wiadomość...",
+          autocomplete: "off",
+          data: { shared_chat_target: "input" },
+          class: "flex-1 px-3 py-2 hud-input rounded text-sm" %>
+      <%= f.submit "Wyślij",
+          class: "px-3 py-2 hud-btn-primary rounded text-sm cursor-pointer" %>
+    <% end %>
+    <% if local_assigns[:error].present? %>
+      <p class="mt-1 text-xs text-hud-red"><%= error %></p>
+    <% end %>
+  <% else %>
+    <p class="text-xs text-hud-text-muted">Dołącz do listy, żeby napisać wiadomość.</p>
+  <% end %>
+</div>

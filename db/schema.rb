@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_03_152051) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_10_120003) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -49,12 +49,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_03_152051) do
   end
 
   create_table "army_list_items", force: :cascade do |t|
+    t.integer "added_by_participant_id"
     t.integer "army_list_id", null: false
     t.datetime "created_at", null: false
     t.integer "miniature_id", null: false
     t.integer "skill", default: 4, null: false
     t.datetime "updated_at", null: false
     t.integer "variant_id", null: false
+    t.index ["added_by_participant_id"], name: "index_army_list_items_on_added_by_participant_id"
     t.index ["army_list_id", "miniature_id"], name: "index_army_list_items_on_army_list_id_and_miniature_id", unique: true
     t.index ["army_list_id"], name: "index_army_list_items_on_army_list_id"
     t.index ["miniature_id"], name: "index_army_list_items_on_miniature_id"
@@ -146,6 +148,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_03_152051) do
     t.string "name", null: false
     t.text "notes"
     t.integer "point_cap", null: false
+    t.boolean "shared_army_list", default: false, null: false
     t.string "status", default: "upcoming", null: false
     t.boolean "themed", default: false, null: false
     t.datetime "updated_at", null: false
@@ -188,6 +191,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_03_152051) do
     t.string "user_agent"
     t.integer "user_id", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "shared_army_list_messages", force: :cascade do |t|
+    t.integer "army_list_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.integer "participant_id"
+    t.string "sender_name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["army_list_id", "created_at"], name: "index_shared_army_list_messages_on_army_list_id_and_created_at"
+    t.index ["participant_id"], name: "index_shared_army_list_messages_on_participant_id"
+  end
+
+  create_table "shared_army_list_participants", force: :cascade do |t|
+    t.datetime "accepted_at"
+    t.integer "army_list_id", null: false
+    t.datetime "created_at", null: false
+    t.string "display_name", null: false
+    t.datetime "left_at"
+    t.string "token", null: false
+    t.datetime "updated_at", null: false
+    t.index "army_list_id, LOWER(display_name)", name: "idx_shared_participants_unique_active_name", unique: true, where: "left_at IS NULL"
+    t.index ["army_list_id"], name: "index_shared_army_list_participants_on_army_list_id"
+    t.index ["token"], name: "index_shared_army_list_participants_on_token", unique: true
   end
 
   create_table "specials", force: :cascade do |t|
@@ -283,6 +311,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_03_152051) do
   add_foreign_key "army_list_factions", "army_lists"
   add_foreign_key "army_list_items", "army_lists"
   add_foreign_key "army_list_items", "miniatures"
+  add_foreign_key "army_list_items", "shared_army_list_participants", column: "added_by_participant_id"
   add_foreign_key "army_list_items", "variants"
   add_foreign_key "army_lists", "event_sides"
   add_foreign_key "army_lists", "events"
@@ -295,6 +324,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_03_152051) do
   add_foreign_key "miniature_locks", "miniatures"
   add_foreign_key "miniatures", "chassis"
   add_foreign_key "sessions", "users"
+  add_foreign_key "shared_army_list_messages", "army_lists"
+  add_foreign_key "shared_army_list_messages", "shared_army_list_participants", column: "participant_id"
+  add_foreign_key "shared_army_list_participants", "army_lists"
   add_foreign_key "sync_attempts", "chassis"
   add_foreign_key "variant_cards", "variants"
   add_foreign_key "variant_factions", "variants"

@@ -441,4 +441,122 @@ class EventTest < ActiveSupport::TestCase
     result = event.available_variants_for_chassis(chassis(:atlas), faction_mul_ids: [ 99999 ])
     assert_empty result
   end
+
+  # =========================================================================
+  # shared_army_list flag
+  # =========================================================================
+
+  test "shared_army_list and themed are mutually exclusive" do
+    event = Event.new(
+      name: "Bad Shared Themed",
+      date: "2026-06-01",
+      game_system: "alpha_strike",
+      point_cap: 400,
+      status: "upcoming",
+      themed: true,
+      shared_army_list: true,
+      shared_tech_base: "inner_sphere"
+    )
+    assert_not event.valid?
+    assert event.errors[:base].any? { |msg| msg.include?("shared") && msg.include?("themed") }
+  end
+
+  test "shared_army_list event without themed is valid" do
+    event = Event.new(
+      name: "Scouring Sands",
+      date: "2026-06-01",
+      game_system: "alpha_strike",
+      point_cap: 400,
+      status: "upcoming",
+      themed: false,
+      shared_army_list: true,
+      shared_tech_base: "inner_sphere"
+    )
+    assert event.valid?
+  end
+
+  test "non-shared, non-themed event is valid" do
+    event = Event.new(
+      name: "Plain Event",
+      date: "2026-06-01",
+      game_system: "alpha_strike",
+      point_cap: 200,
+      status: "upcoming"
+    )
+    assert event.valid?
+  end
+
+  test "creating a shared event auto-creates a draft army list with supplied tech_base" do
+    event = Event.create!(
+      name: "Scouring Sands Auto",
+      date: "2026-06-01",
+      game_system: "alpha_strike",
+      point_cap: 400,
+      status: "upcoming",
+      shared_army_list: true,
+      shared_tech_base: "inner_sphere"
+    )
+
+    list = event.shared_army_list_record
+    assert list.present?, "shared event must auto-create an army list"
+    assert_equal "draft", list.status
+    assert_equal "inner_sphere", list.tech_base
+    assert_includes list.player_name, "Scouring Sands Auto"
+  end
+
+  test "creating a non-shared event does not auto-create any army list" do
+    event = Event.create!(
+      name: "No Auto List",
+      date: "2026-06-01",
+      game_system: "alpha_strike",
+      point_cap: 200,
+      status: "upcoming"
+    )
+    assert_equal 0, event.army_lists.count
+  end
+
+  test "shared_army_list_record returns nil for non-shared events" do
+    event = events(:upcoming_event)
+    assert_nil event.shared_army_list_record
+  end
+
+  test "updating a shared event tech_base on a draft empty list flows through" do
+    event = Event.create!(
+      name: "Tech Sync Draft",
+      date: "2026-06-01",
+      game_system: "alpha_strike",
+      point_cap: 400,
+      status: "upcoming",
+      shared_army_list: true,
+      shared_tech_base: "inner_sphere"
+    )
+
+    event.update!(shared_tech_base: "clan")
+    assert_equal "clan", event.shared_army_list_record.reload.tech_base
+  end
+
+  test "updating a shared event tech_base is blocked when the list has items" do
+    event = Event.create!(
+      name: "Tech Sync Blocked",
+      date: "2026-06-01",
+      game_system: "alpha_strike",
+      point_cap: 400,
+      status: "upcoming",
+      shared_army_list: true,
+      shared_tech_base: "inner_sphere"
+    )
+    list = event.shared_army_list_record
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+
+    assert_not event.update(shared_tech_base: "clan"),
+      "update should be rejected by validation"
+    assert_includes event.errors[:shared_tech_base].join,
+      "contains units"
+    assert_equal "inner_sphere", list.reload.tech_base,
+      "tech_base must not change once items exist"
+  end
 end

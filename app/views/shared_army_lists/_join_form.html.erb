@@ -1,0 +1,17 @@
+<div class="bg-hud-bg-panel border border-hud-border rounded p-4">
+  <h2 class="font-hud-heading text-sm text-hud-text-dim uppercase tracking-wider mb-3">
+    Dołącz do wspólnej listy
+  </h2>
+  <%= form_with url: event_shared_army_list_shared_participants_path(event),
+      scope: :shared_army_list_participant,
+      class: "flex flex-col sm:flex-row gap-2",
+      data: { turbo: false } do |f| %>
+    <%= f.text_field :display_name,
+        required: true,
+        maxlength: 40,
+        placeholder: "Twój pseudonim",
+        class: "flex-1 px-3 py-2 hud-input rounded" %>
+    <%= f.submit "Dołącz",
+        class: "px-4 py-2 hud-btn-primary rounded cursor-pointer" %>
+  <% end %>
+</div>

@@ -11,6 +11,12 @@ class ArmyList < ApplicationRecord
   has_many :army_list_factions, dependent: :destroy
   has_many :miniatures, through: :army_list_items
   has_many :miniature_locks, dependent: :destroy
+  has_many :shared_participants,
+           class_name: "SharedArmyListParticipant",
+           dependent: :destroy
+  has_many :shared_messages,
+           class_name: "SharedArmyListMessage",
+           dependent: :destroy
 
   validates :player_name, presence: true
   validates :status, inclusion: { in: %w[draft submitted inactive] }
@@ -61,6 +67,21 @@ class ArmyList < ApplicationRecord
     status == "inactive"
   end
 
+  def shared?
+    event.shared_army_list?
+  end
+
+  def active_participants
+    shared_participants.where(left_at: nil)
+  end
+
+  def all_accepted?
+    return false unless shared?
+    scope = active_participants
+    return false unless scope.exists?
+    scope.where(accepted_at: nil).none?
+  end
+
   def all_cards_ready?
     pending_cards_count == 0
   end
@@ -73,6 +94,11 @@ class ArmyList < ApplicationRecord
   end
 
   def submit!
+    if shared? && !all_accepted?
+      raise LockConflictError,
+        "Wszyscy uczestnicy muszą zaakceptować listę przed zgłoszeniem."
+    end
+
     if total_points > effective_point_cap
       raise PointCapExceededError,
         "Nie można zgłosić listy — przekroczono limit #{effective_point_cap} #{event.point_value_label} (razem: #{total_points} #{event.point_value_label})"

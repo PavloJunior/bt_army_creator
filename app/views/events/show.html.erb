@@ -48,6 +48,38 @@
     <% end %>
   </div>
 
+  <%# === Shared army list panel === %>
+  <% if @event.shared_army_list? && @shared_army_list %>
+    <div class="bg-hud-bg-panel border border-hud-green/40 rounded p-5 mb-6 hud-panel">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div>
+          <h2 class="font-hud-heading text-xl font-bold text-hud-green uppercase">
+            Wspólna lista (co-op)
+          </h2>
+          <p class="text-sm text-hud-text-dim mt-1">
+            <%= @shared_army_list.active_participants.count %> uczestników &middot;
+            <%= @shared_army_list.total_points %> / <%= @shared_army_list.effective_point_cap %>
+            <%= @event.point_value_label %> &middot;
+            tech: <%= @shared_army_list.tech_base_label %> &middot;
+            <span class="<%= { 'draft' => 'text-hud-amber', 'submitted' => 'text-hud-green', 'inactive' => 'text-hud-text-muted' }[@shared_army_list.status] %>">
+              <%= { 'draft' => 'wersja robocza', 'submitted' => 'zgłoszona', 'inactive' => 'nieaktywna' }[@shared_army_list.status] %>
+            </span>
+          </p>
+        </div>
+
+        <% if @shared_current_participant.present? %>
+          <%= link_to "Otwórz listę",
+              event_army_list_path(@event, @shared_army_list),
+              class: "inline-block hud-btn-primary px-6 py-3 rounded text-sm no-underline whitespace-nowrap" %>
+        <% end %>
+      </div>
+
+      <% if @shared_current_participant.blank? %>
+        <%= render partial: "shared_army_lists/join_form", locals: { event: @event } %>
+      <% end %>
+    </div>
+  <% end %>
+
   <%# === VS Banner for themed events === %>
   <% if @event.themed? %>
     <div class="bg-hud-bg-panel border border-hud-amber/40 rounded p-4 mb-6 hud-panel">
@@ -71,7 +103,7 @@
   <% end %>
 
   <%# === Draft lists === %>
-  <% if @my_drafts.any? %>
+  <% if @my_drafts.any? && !@event.shared_army_list? %>
     <div class="mb-6">
       <h2 class="font-hud-heading text-lg font-semibold text-hud-amber mb-3 uppercase tracking-wider flex items-center gap-2">
         <span class="inline-block w-2 h-2 bg-hud-amber rounded-full animate-pulse"></span>
@@ -103,7 +135,7 @@
   <% end %>
 
   <%# === Inactive lists === %>
-  <% if @my_inactive.any? %>
+  <% if @my_inactive.any? && !@event.shared_army_list? %>
     <div class="mb-6">
       <h2 class="font-hud-heading text-lg font-semibold text-hud-text-muted mb-3 uppercase tracking-wider">
         Twoje nieaktywne listy
@@ -134,7 +166,7 @@
   <% end %>
 
   <%# === Create list button === %>
-  <% if @event.status != "completed" %>
+  <% if @event.status != "completed" && !@event.shared_army_list? %>
     <div class="mb-6">
       <%= link_to new_event_army_list_path(@event),
           class: "inline-block hud-btn-primary px-6 py-3 rounded text-sm no-underline" do %>

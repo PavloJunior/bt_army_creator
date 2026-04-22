@@ -1,0 +1,14 @@
+<div id="shared_acceptance_banner"
+     class="bg-hud-bg-panel border border-hud-border rounded p-4">
+  <% active = army_list.active_participants.order(:id) %>
+  <% accepted = active.where.not(accepted_at: nil).count %>
+  <% total = active.count %>
+  <% all_accepted = army_list.all_accepted? %>
+
+  <div>
+    <h2 class="font-hud-heading text-sm text-hud-text-dim uppercase tracking-wider">Akceptacja</h2>
+    <p class="text-sm mt-1 <%= all_accepted ? 'text-hud-green' : 'text-hud-text' %>">
+      <%= accepted %> z <%= total %> uczestników zaakceptowało listę.
+    </p>
+  </div>
+</div>

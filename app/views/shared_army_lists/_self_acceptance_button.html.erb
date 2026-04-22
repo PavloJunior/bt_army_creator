@@ -1,0 +1,17 @@
+<%# Viewer-specific acceptance button. Never broadcast — each client renders
+    their own instance and only the clicker's controller response updates it. %>
+<div id="shared_self_acceptance_button">
+  <% if army_list.draft? && current_participant.present? %>
+    <% if current_participant.accepted? %>
+      <%= button_to "Wycofaj akceptację",
+          unaccept_event_shared_army_list_shared_participant_path(event, current_participant),
+          method: :patch,
+          class: "hud-btn-amber px-4 py-2 rounded text-sm cursor-pointer" %>
+    <% else %>
+      <%= button_to "Akceptuj listę",
+          accept_event_shared_army_list_shared_participant_path(event, current_participant),
+          method: :patch,
+          class: "hud-btn-primary px-4 py-2 rounded text-sm cursor-pointer" %>
+    <% end %>
+  <% end %>
+</div>

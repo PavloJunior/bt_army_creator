@@ -183,4 +183,140 @@ class ArmyListItemsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
   end
+
+  # =========================================================================
+  # Shared army list branches
+  # =========================================================================
+
+  class SharedListBranchesTest < ActionDispatch::IntegrationTest
+    setup do
+      @event = events(:shared_event)
+      @list = @event.shared_army_list_record
+      @alice = @list.shared_participants.create!(display_name: "Alice")
+      @bob = @list.shared_participants.create!(display_name: "Bob")
+      set_participant_cookie([ @alice.token ])
+    end
+
+    test "create sets added_by_participant to the current participant" do
+      assert_difference "ArmyListItem.count", 1 do
+        post event_army_list_army_list_items_path(@event, @list),
+             params: { army_list_item: {
+               chassis_id: chassis(:atlas).id,
+               variant_id: variants(:atlas_d).id
+             } },
+             as: :turbo_stream
+      end
+
+      item = @list.army_list_items.order(:id).last
+      assert_equal @alice.id, item.added_by_participant_id
+    end
+
+    test "create on shared list returns minimal response (no HTTP-side DOM updates)" do
+      post event_army_list_army_list_items_path(@event, @list),
+           params: { army_list_item: {
+             chassis_id: chassis(:atlas).id,
+             variant_id: variants(:atlas_d).id
+           } },
+           as: :turbo_stream
+
+      # Shared-list updates come from the broadcast, not the HTTP response.
+      # The HTTP response must not include the turbo_stream operations that
+      # would otherwise race with the broadcast.
+      assert_response :no_content
+    end
+
+    test "create without a participant cookie is refused" do
+      cookies.delete("shared_participant_tokens")
+
+      assert_no_difference "ArmyListItem.count" do
+        post event_army_list_army_list_items_path(@event, @list),
+             params: { army_list_item: {
+               chassis_id: chassis(:atlas).id,
+               variant_id: variants(:atlas_d).id
+             } },
+             as: :turbo_stream
+      end
+    end
+
+    test "destroy allowed when current participant is the adder" do
+      item = @list.army_list_items.create!(
+        miniature: miniatures(:atlas_mini),
+        variant: variants(:atlas_d),
+        added_by_participant: @alice
+      )
+
+      assert_difference "ArmyListItem.count", -1 do
+        delete event_army_list_army_list_item_path(@event, @list, item),
+               as: :turbo_stream
+      end
+    end
+
+    test "destroy refused when current participant is not the adder" do
+      item = @list.army_list_items.create!(
+        miniature: miniatures(:atlas_mini),
+        variant: variants(:atlas_d),
+        added_by_participant: @bob
+      )
+
+      assert_no_difference "ArmyListItem.count" do
+        delete event_army_list_army_list_item_path(@event, @list, item),
+               as: :turbo_stream
+      end
+
+      assert_response :forbidden
+    end
+
+    test "destroy allowed for unclaimed items" do
+      item = @list.army_list_items.create!(
+        miniature: miniatures(:atlas_mini),
+        variant: variants(:atlas_d),
+        added_by_participant: nil
+      )
+
+      assert_difference "ArmyListItem.count", -1 do
+        delete event_army_list_army_list_item_path(@event, @list, item),
+               as: :turbo_stream
+      end
+    end
+
+    test "skill update refused when current participant is not the adder" do
+      item = @list.army_list_items.create!(
+        miniature: miniatures(:atlas_mini),
+        variant: variants(:atlas_d),
+        skill: 4,
+        added_by_participant: @bob
+      )
+
+      patch event_army_list_army_list_item_path(@event, @list, item),
+            params: { army_list_item: { skill: 3 } },
+            as: :turbo_stream
+
+      assert_response :forbidden
+      assert_equal 4, item.reload.skill
+    end
+
+    test "skill update allowed when current participant is the adder" do
+      item = @list.army_list_items.create!(
+        miniature: miniatures(:atlas_mini),
+        variant: variants(:atlas_d),
+        skill: 4,
+        added_by_participant: @alice
+      )
+
+      patch event_army_list_army_list_item_path(@event, @list, item),
+            params: { army_list_item: { skill: 3 } },
+            as: :turbo_stream
+
+      assert_equal 3, item.reload.skill
+    end
+
+    private
+
+    def set_participant_cookie(tokens)
+      ActionDispatch::TestRequest.create.cookie_jar.tap do |cookie_jar|
+        cookie_jar.signed[:shared_participant_tokens] = tokens
+        cookies["shared_participant_tokens"] = cookie_jar[:shared_participant_tokens]
+      end
+    end
+  end
 end

@@ -1,0 +1,29 @@
+<div id="<%= dom_id(message) %>"
+     data-added-by-participant-id="<%= message.participant_id %>"
+     class="bg-hud-bg border border-hud-border rounded p-2">
+  <% if message.deleted? %>
+    <p class="text-xs text-hud-text-muted italic">[Wiadomość usunięta]</p>
+  <% else %>
+    <div class="flex items-baseline justify-between gap-3">
+      <div class="flex items-baseline gap-2 min-w-0">
+        <span class="text-xs font-hud-heading text-hud-green truncate">
+          <%= message.sender_name %>
+        </span>
+        <span class="text-[10px] text-hud-text-muted">
+          <%= I18n.l(message.created_at, format: :short) %>
+        </span>
+      </div>
+      <span data-shared-visibility-target="ownerOnly" hidden>
+        <%# Turbo-enabled: the server responds with 204 and the model's
+            after_update_commit broadcasts the soft-deleted replacement to all
+            subscribers — the deleter included. %>
+        <%= button_to "×",
+            event_shared_army_list_shared_message_path(event, message),
+            method: :delete,
+            class: "text-xs text-hud-text-muted hover:text-hud-red px-1 cursor-pointer",
+            form: { class: "inline" } %>
+      </span>
+    </div>
+    <p class="text-sm text-hud-text mt-1 whitespace-pre-wrap break-words"><%= message.body %></p>
+  <% end %>
+</div>

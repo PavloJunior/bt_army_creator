@@ -1,10 +1,13 @@
 class ArmyListsController < ApplicationController
   include ArmyListOwnership
+  include SharedParticipantAuth
 
   before_action :set_event
-  before_action :set_army_list, only: [ :show, :edit, :update, :submit, :deactivate, :reactivate, :change_tech_base, :toggle_faction, :clear, :print_cards, :print_cards_ready ]
-  before_action :authorize_army_list!, only: [ :edit, :update, :submit, :deactivate, :reactivate, :change_tech_base, :toggle_faction, :clear ]
+  before_action :redirect_to_shared_list_on_shared_event, only: [ :new, :create ]
+  before_action :set_army_list, only: [ :show, :edit, :update, :submit, :deactivate, :reactivate, :change_tech_base, :toggle_faction, :clear, :clear_mine, :print_cards, :print_cards_ready ]
+  before_action :authorize_list_access!, only: [ :edit, :update, :submit, :deactivate, :reactivate, :change_tech_base, :toggle_faction, :clear, :clear_mine ]
   before_action :require_active_event!, only: [ :submit, :deactivate, :reactivate ]
+  before_action :refuse_on_shared_list, only: [ :change_tech_base, :toggle_faction, :clear ]
 
   def new
     @army_list = @event.army_lists.build
@@ -51,7 +54,7 @@ class ArmyListsController < ApplicationController
   end
 
   def show
-    @items = @army_list.army_list_items.includes(miniature: :chassis, variant: [])
+    @items = @army_list.army_list_items.includes(:added_by_participant, miniature: :chassis, variant: [])
 
     used_ids = @army_list.army_list_items.pluck(:miniature_id)
     locked_ids = @event.miniature_locks.pluck(:miniature_id)
@@ -73,7 +76,22 @@ class ArmyListsController < ApplicationController
 
     @available_unit_types = all_chassis.where.not(unit_type: [ nil, "" ]).distinct.pluck(:unit_type).sort
 
-    @is_owner = owner_of_army_list?(@army_list) || admin_signed_in?
+    if @army_list.shared?
+      @current_participant = current_participant(@army_list)
+      @is_admin = admin_signed_in?
+      @is_owner = @current_participant.present? || @is_admin
+      @shared_viewer_id_value = @is_admin ? "admin" : (@current_participant&.id&.to_s || "")
+      @shared_participants_active = @army_list.active_participants.order(:id)
+      @shared_messages = @army_list.shared_messages.visible.includes(:participant)
+      @my_shared_items_count = if @current_participant
+        @army_list.army_list_items.where(added_by_participant_id: @current_participant.id).count
+      else
+        0
+      end
+    else
+      @is_owner = owner_of_army_list?(@army_list) || admin_signed_in?
+    end
+
     if @army_list.event_side
       side_faction_ids = @army_list.event_side.event_side_factions.pluck(:faction_mul_id)
       @sidebar_factions = Faction.where(mul_id: side_faction_ids).order(:name).group_by(&:category)
@@ -148,6 +166,32 @@ class ArmyListsController < ApplicationController
     end
   end
 
+  def clear_mine
+    unless @army_list.shared? && @army_list.draft?
+      redirect_to event_army_list_path(@event, @army_list)
+      return
+    end
+
+    participant = current_participant(@army_list)
+    unless participant
+      redirect_to event_path(@event),
+                  alert: "Dołącz do listy, aby móc ją edytować."
+      return
+    end
+
+    destroyed = @army_list.army_list_items
+                          .where(added_by_participant_id: participant.id)
+                          .destroy_all
+
+    notice = if destroyed.any?
+      "Usunięto #{destroyed.size} #{destroyed.size == 1 ? 'jednostkę' : 'jednostek'} dodanych przez Ciebie."
+    else
+      "Nie masz jednostek do usunięcia."
+    end
+
+    redirect_to event_army_list_path(@event, @army_list), notice: notice
+  end
+
   def print_cards
     unless @army_list.submitted? && @event.game_system == "alpha_strike"
       redirect_to event_army_list_path(@event, @army_list),
@@ -165,6 +209,12 @@ class ArmyListsController < ApplicationController
   end
 
   def submit
+    if @army_list.shared? && !@army_list.all_accepted?
+      redirect_to event_army_list_path(@event, @army_list),
+                  alert: "Wszyscy uczestnicy muszą zaakceptować listę przed zgłoszeniem."
+      return
+    end
+
     @army_list.submit!
     redirect_to event_army_list_path(@event, @army_list),
                 notice: "Lista zgłoszona! Twoje modele zostały zarezerwowane."
@@ -202,6 +252,32 @@ class ArmyListsController < ApplicationController
 
   def set_army_list
     @army_list = @event.army_lists.find(params[:id])
+  end
+
+  def redirect_to_shared_list_on_shared_event
+    return unless @event.shared_army_list?
+    list = @event.shared_army_list_record
+    if list
+      redirect_to event_army_list_path(@event, list)
+    else
+      redirect_to event_path(@event), alert: "Wspólna lista nie istnieje."
+    end
+  end
+
+  def authorize_list_access!
+    if @army_list.shared?
+      unless current_participant(@army_list) || admin_signed_in?
+        redirect_to event_path(@event), alert: "Dołącz do listy, aby móc ją edytować."
+      end
+    else
+      authorize_army_list!
+    end
+  end
+
+  def refuse_on_shared_list
+    return unless @army_list.shared?
+    redirect_to event_army_list_path(@event, @army_list),
+                alert: "Ta akcja nie jest dostępna dla wspólnych list."
   end
 
   def remove_mismatched_items!

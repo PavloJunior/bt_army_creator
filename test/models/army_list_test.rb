@@ -336,4 +336,123 @@ class ArmyListTest < ActiveSupport::TestCase
     # 1 player: per_player_point_cap = 300, + bonus 25 = 325
     assert_equal 325, list.effective_point_cap
   end
+
+  # =========================================================================
+  # Shared army list
+  # =========================================================================
+
+  test "#shared? reflects event.shared_army_list?" do
+    assert_not army_lists(:draft_list).shared?
+    assert army_lists(:shared_list).shared?
+  end
+
+  test "shared list has has_many shared_participants association" do
+    list = army_lists(:shared_list)
+    assert_respond_to list, :shared_participants
+    assert_equal 0, list.shared_participants.count
+  end
+
+  test "#active_participants excludes participants with left_at set" do
+    list = army_lists(:shared_list)
+    active = list.shared_participants.create!(display_name: "Alice")
+    left = list.shared_participants.create!(display_name: "Bob")
+    left.update!(left_at: Time.current)
+
+    assert_includes list.active_participants, active
+    assert_not_includes list.active_participants, left
+  end
+
+  test "#all_accepted? is false when there are no participants" do
+    list = army_lists(:shared_list)
+    assert_not list.all_accepted?
+  end
+
+  test "#all_accepted? is false when any active participant has not accepted" do
+    list = army_lists(:shared_list)
+    list.shared_participants.create!(display_name: "Alice", accepted_at: Time.current)
+    list.shared_participants.create!(display_name: "Bob") # not accepted
+
+    assert_not list.all_accepted?
+  end
+
+  test "#all_accepted? is true when every active participant has accepted" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    bob = list.shared_participants.create!(display_name: "Bob")
+    alice.accept!
+    bob.accept!
+
+    assert list.reload.all_accepted?
+  end
+
+  test "#all_accepted? ignores participants who have left" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    bob = list.shared_participants.create!(display_name: "Bob")
+    bob.leave!
+    alice.accept!
+
+    assert list.reload.all_accepted?, "left participants should not block acceptance"
+  end
+
+  test "a new participant joining clears other participants' acceptances" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    alice.accept!
+    assert alice.reload.accepted?
+
+    list.shared_participants.create!(display_name: "Bob")
+    assert_nil alice.reload.accepted_at,
+      "new participant joining must reset prior acceptances"
+  end
+
+  test "a participant leaving clears other participants' acceptances" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    bob = list.shared_participants.create!(display_name: "Bob")
+    alice.accept!
+    bob.accept!
+    assert list.reload.all_accepted?
+
+    carol = list.shared_participants.create!(display_name: "Carol")
+    alice.accept!
+    bob.accept!
+    carol.accept!
+    assert list.reload.all_accepted?
+
+    carol.leave!
+    assert_nil alice.reload.accepted_at
+    assert_nil bob.reload.accepted_at
+  end
+
+  test "submit! on shared list raises LockConflictError when not all accepted" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    list.shared_participants.create!(display_name: "Bob")
+    alice.accept! # Bob still pending
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+
+    assert_raises(ArmyList::LockConflictError) { list.submit! }
+  end
+
+  test "submit! on shared list succeeds when all participants accepted" do
+    list = army_lists(:shared_list)
+    alice = list.shared_participants.create!(display_name: "Alice")
+    bob = list.shared_participants.create!(display_name: "Bob")
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      skill: 4
+    )
+    alice.accept!
+    bob.accept!
+
+    list.submit!
+    assert list.reload.submitted?
+    assert_equal 1, list.miniature_locks.count
+  end
 end

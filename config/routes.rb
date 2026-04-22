@@ -60,10 +60,29 @@ Rails.application.routes.draw do
         patch :change_tech_base
         patch :toggle_faction
         delete :clear
+        delete :clear_mine
         get :print_cards
         get :print_cards_ready
       end
       resources :army_list_items, only: [ :create, :destroy, :update ]
+    end
+
+    resource :shared_army_list, only: [] do
+      resources :participants,
+                only: [ :create ],
+                controller: "shared_army_list_participants",
+                as: :shared_participants do
+        member do
+          patch :accept
+          patch :unaccept
+          patch :leave
+        end
+      end
+
+      resources :messages,
+                only: [ :create, :destroy ],
+                controller: "shared_army_list_messages",
+                as: :shared_messages
     end
   end
 

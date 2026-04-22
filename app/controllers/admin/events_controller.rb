@@ -48,8 +48,12 @@ module Admin
     end
 
     def destroy
-      @event.destroy
-      redirect_to admin_events_path, notice: "Event deleted."
+      if @event.destroy
+        redirect_to admin_events_path, notice: "Event deleted."
+      else
+        redirect_to admin_event_path(@event),
+                    alert: "Nie udało się usunąć wydarzenia: #{@event.errors.full_messages.to_sentence}"
+      end
     end
 
     def activate
@@ -69,7 +73,10 @@ module Admin
     end
 
     def event_params
-      params.require(:event).permit(:name, :date, :game_system, :point_cap, :notes, :themed)
+      params.require(:event).permit(
+        :name, :date, :game_system, :point_cap, :notes, :themed,
+        :shared_army_list, :shared_tech_base
+      )
     end
 
     def set_themed_point_cap

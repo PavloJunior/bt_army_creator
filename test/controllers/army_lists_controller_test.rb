@@ -187,12 +187,216 @@ class ArmyListsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to event_army_list_path(@event, @inactive_list)
   end
 
+  # =========================================================================
+  # Shared army list
+  # =========================================================================
+
+  test "shared event: new redirects straight to the auto-created shared list" do
+    shared_event = events(:shared_event)
+    list = shared_event.shared_army_list_record
+
+    get new_event_army_list_path(shared_event)
+
+    assert_redirected_to event_army_list_path(shared_event, list)
+  end
+
+  test "shared event: create redirects straight to the auto-created shared list" do
+    shared_event = events(:shared_event)
+    list = shared_event.shared_army_list_record
+
+    assert_no_difference "ArmyList.count" do
+      post event_army_lists_path(shared_event), params: {
+        army_list: { player_name: "Noop", tech_base: "mixed" }
+      }
+    end
+
+    assert_redirected_to event_army_list_path(shared_event, list)
+  end
+
+  test "shared list: change_tech_base is refused" do
+    shared_event = events(:shared_event)
+    list = shared_event.shared_army_list_record
+    original = list.tech_base
+    alice = list.shared_participants.create!(display_name: "Alice")
+    set_participant_cookie([ alice.token ])
+
+    patch change_tech_base_event_army_list_path(shared_event, list),
+          params: { tech_base: "clan" }
+
+    assert_redirected_to event_army_list_path(shared_event, list)
+    assert_equal original, list.reload.tech_base,
+      "shared list tech base must never change via the public endpoint"
+  end
+
+  test "shared list: toggle_faction is refused" do
+    shared_event = events(:shared_event)
+    list = shared_event.shared_army_list_record
+    alice = list.shared_participants.create!(display_name: "Alice")
+    set_participant_cookie([ alice.token ])
+
+    patch toggle_faction_event_army_list_path(shared_event, list),
+          params: { faction_mul_id: 29 }
+
+    assert_redirected_to event_army_list_path(shared_event, list)
+    assert_equal 0, list.army_list_factions.count
+  end
+
+  test "shared list: clear is refused" do
+    shared_event = events(:shared_event)
+    list = shared_event.shared_army_list_record
+    alice = list.shared_participants.create!(display_name: "Alice")
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      added_by_participant: alice
+    )
+    set_participant_cookie([ alice.token ])
+
+    delete clear_event_army_list_path(shared_event, list)
+
+    assert_redirected_to event_army_list_path(shared_event, list)
+    assert_equal 1, list.army_list_items.count,
+      "shared list items must not be cleared by the public clear action"
+  end
+
+  test "shared list: submit is blocked until every participant has accepted" do
+    shared_event = events(:shared_event)
+    shared_event.update!(status: "active")
+    list = shared_event.shared_army_list_record
+    alice = list.shared_participants.create!(display_name: "Alice")
+    list.shared_participants.create!(display_name: "Bob")
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      added_by_participant: alice
+    )
+    alice.accept! # Bob still pending
+    set_participant_cookie([ alice.token ])
+
+    patch submit_event_army_list_path(shared_event, list)
+
+    assert_redirected_to event_army_list_path(shared_event, list)
+    assert flash[:alert].present?
+    assert list.reload.draft?
+  end
+
+  test "shared list: submit succeeds when all participants accepted" do
+    shared_event = events(:shared_event)
+    shared_event.update!(status: "active")
+    list = shared_event.shared_army_list_record
+    alice = list.shared_participants.create!(display_name: "Alice")
+    bob = list.shared_participants.create!(display_name: "Bob")
+    list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      added_by_participant: alice
+    )
+    alice.accept!
+    bob.accept!
+    set_participant_cookie([ alice.token ])
+
+    patch submit_event_army_list_path(shared_event, list)
+
+    assert_redirected_to event_army_list_path(shared_event, list)
+    assert list.reload.submitted?
+  end
+
+  test "shared list: non-participant, non-admin cannot submit" do
+    shared_event = events(:shared_event)
+    shared_event.update!(status: "active")
+    list = shared_event.shared_army_list_record
+    alice = list.shared_participants.create!(display_name: "Alice")
+    alice.accept!
+
+    patch submit_event_army_list_path(shared_event, list)
+
+    assert_redirected_to event_path(shared_event)
+    assert list.reload.draft?
+  end
+
+  # -------------------------------------------------------------------------
+  # clear_mine (shared list: remove only the current participant's items)
+  # -------------------------------------------------------------------------
+
+  test "shared list: clear_mine destroys only items added by the current participant" do
+    shared_event = events(:shared_event)
+    list = shared_event.shared_army_list_record
+    alice = list.shared_participants.create!(display_name: "Alice")
+    bob = list.shared_participants.create!(display_name: "Bob")
+
+    alice_item = list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      added_by_participant: alice
+    )
+    bob_item = list.army_list_items.create!(
+      miniature: miniatures(:commando_mini),
+      variant: variants(:commando_2d),
+      added_by_participant: bob
+    )
+
+    set_participant_cookie([ alice.token ])
+    delete clear_mine_event_army_list_path(shared_event, list)
+
+    assert_redirected_to event_army_list_path(shared_event, list)
+    assert_raises(ActiveRecord::RecordNotFound) { alice_item.reload }
+    assert bob_item.reload.persisted?
+  end
+
+  test "shared list: clear_mine leaves unclaimed items alone" do
+    shared_event = events(:shared_event)
+    list = shared_event.shared_army_list_record
+    alice = list.shared_participants.create!(display_name: "Alice")
+    unclaimed_item = list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      added_by_participant: nil
+    )
+
+    set_participant_cookie([ alice.token ])
+    delete clear_mine_event_army_list_path(shared_event, list)
+
+    assert unclaimed_item.reload.persisted?,
+      "unclaimed items should not be touched by clear_mine"
+  end
+
+  test "shared list: clear_mine refused without a participant cookie" do
+    shared_event = events(:shared_event)
+    list = shared_event.shared_army_list_record
+    alice = list.shared_participants.create!(display_name: "Alice")
+    item = list.army_list_items.create!(
+      miniature: miniatures(:atlas_mini),
+      variant: variants(:atlas_d),
+      added_by_participant: alice
+    )
+
+    delete clear_mine_event_army_list_path(shared_event, list)
+
+    assert_redirected_to event_path(shared_event)
+    assert item.reload.persisted?
+  end
+
+  test "clear_mine refuses on non-shared lists" do
+    set_army_list_cookie([ @draft_list.id ])
+
+    delete clear_mine_event_army_list_path(@event, @draft_list)
+
+    assert_redirected_to event_army_list_path(@event, @draft_list)
+  end
+
   private
 
   def set_army_list_cookie(ids)
     ActionDispatch::TestRequest.create.cookie_jar.tap do |cookie_jar|
       cookie_jar.signed[:army_list_ids] = ids
       cookies["army_list_ids"] = cookie_jar[:army_list_ids]
+    end
+  end
+
+  def set_participant_cookie(tokens)
+    ActionDispatch::TestRequest.create.cookie_jar.tap do |cookie_jar|
+      cookie_jar.signed[:shared_participant_tokens] = tokens
+      cookies["shared_participant_tokens"] = cookie_jar[:shared_participant_tokens]
     end
   end
 end

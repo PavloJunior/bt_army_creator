@@ -1,8 +1,16 @@
 class Event < ApplicationRecord
+  # Virtual attribute — admin supplies the tech base for the auto-created
+  # shared army list via the event form. Persisted on the ArmyList, not on Event.
+  attr_accessor :shared_tech_base
+
   has_many :event_era_restrictions, dependent: :destroy
   has_many :event_faction_restrictions, dependent: :destroy
-  has_many :event_sides, -> { order(:position) }, dependent: :destroy
+  # army_lists must be destroyed BEFORE event_sides — EventSide has
+  # `dependent: :restrict_with_error` on its army_lists association (to block
+  # side deletion while lists reference it). Without this order, destroying a
+  # themed event silently fails when sides still have attached lists.
   has_many :army_lists, dependent: :destroy
+  has_many :event_sides, -> { order(:position) }, dependent: :destroy
   has_many :miniature_locks, dependent: :destroy
 
   validates :name, presence: true
@@ -10,6 +18,12 @@ class Event < ApplicationRecord
   validates :point_cap, presence: true, numericality: { greater_than: 0 }
   validates :status, inclusion: { in: %w[upcoming active completed] }
   validate :themed_must_have_sides
+  validate :shared_and_themed_are_mutually_exclusive
+  validate :shared_tech_base_is_valid_when_shared
+  validate :shared_tech_base_change_requires_empty_draft_list
+
+  after_create :create_shared_army_list_if_needed
+  after_update :sync_shared_army_list_tech_base
 
   scope :upcoming, -> { where(status: "upcoming") }
   scope :active, -> { where(status: "active") }
@@ -73,6 +87,11 @@ class Event < ApplicationRecord
     scope
   end
 
+  def shared_army_list_record
+    return nil unless shared_army_list?
+    army_lists.order(:id).first
+  end
+
   private
 
   def themed_must_have_sides
@@ -83,6 +102,65 @@ class Event < ApplicationRecord
     sides_count = event_sides.reject(&:marked_for_destruction?).size
     unless sides_count.between?(2, 4)
       errors.add(:base, "Themed events must have between 2 and 4 sides")
+    end
+  end
+
+  def shared_and_themed_are_mutually_exclusive
+    if shared_army_list? && themed?
+      errors.add(:base, "An event cannot be both shared and themed")
+    end
+  end
+
+  def shared_tech_base_is_valid_when_shared
+    return unless shared_army_list?
+    # On create the virtual attr must be set to a valid value. On update it's
+    # optional — nil means "don't touch the list's tech_base".
+    return if shared_tech_base.blank? && persisted?
+
+    unless ArmyList::TECH_BASES.include?(shared_tech_base)
+      errors.add(:shared_tech_base, "must be one of #{ArmyList::TECH_BASES.join(', ')}")
+    end
+  end
+
+  def create_shared_army_list_if_needed
+    return unless shared_army_list?
+
+    army_lists.create!(
+      player_name: "Shared Force — #{name}",
+      status: "draft",
+      tech_base: shared_tech_base.presence || "mixed"
+    )
+  end
+
+  def shared_tech_base_change_requires_empty_draft_list
+    return unless persisted? && shared_army_list?
+    return if shared_tech_base.blank?
+
+    list = shared_army_list_record
+    return unless list
+    return if shared_tech_base == list.tech_base
+
+    if list.status != "draft"
+      errors.add(:shared_tech_base, "cannot be changed once the shared list has been submitted")
+    elsif list.army_list_items.exists?
+      errors.add(:shared_tech_base, "cannot be changed while the shared list contains units")
+    end
+  end
+
+  def sync_shared_army_list_tech_base
+    return unless shared_army_list?
+    return if shared_tech_base.blank?
+
+    list = shared_army_list_record
+    return unless list && list.status == "draft" && shared_tech_base != list.tech_base
+
+    # with_lock guards against a participant adding an item between our
+    # validation pass and the update. The empty? recheck inside the lock keeps
+    # the write safe even though the validation already rejected the non-empty
+    # case for the user-facing path.
+    list.with_lock do
+      next unless list.army_list_items.empty?
+      list.update!(tech_base: shared_tech_base)
     end
   end
 end

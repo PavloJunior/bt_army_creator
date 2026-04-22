@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["sidesEditor", "factionRestrictions", "pointCapField", "sideContainer", "sideTemplate", "addSideButton"]
+  static targets = ["sidesEditor", "factionRestrictions", "pointCapField", "sideContainer", "sideTemplate", "addSideButton", "sharedTechBaseField"]
 
   connect() {
     this.syncVisibility()
@@ -12,7 +12,27 @@ export default class extends Controller {
   }
 
   syncVisibility() {
-    const themed = this.element.querySelector("[data-themed-checkbox]").checked
+    const themedCheckbox = this.element.querySelector("[data-themed-checkbox]")
+    const sharedCheckbox = this.element.querySelector("[data-shared-checkbox]")
+
+    // Mutual exclusion: checking one disables the other.
+    if (themedCheckbox && sharedCheckbox) {
+      if (themedCheckbox.checked) {
+        sharedCheckbox.checked = false
+        sharedCheckbox.disabled = true
+      } else {
+        sharedCheckbox.disabled = false
+      }
+      if (sharedCheckbox.checked) {
+        themedCheckbox.checked = false
+        themedCheckbox.disabled = true
+      } else {
+        themedCheckbox.disabled = false
+      }
+    }
+
+    const themed = themedCheckbox ? themedCheckbox.checked : false
+    const shared = sharedCheckbox ? sharedCheckbox.checked : false
 
     if (this.hasSidesEditorTarget) {
       this.sidesEditorTarget.classList.toggle("hidden", !themed)
@@ -27,6 +47,9 @@ export default class extends Controller {
       if (pointCapInput) {
         pointCapInput.required = !themed
       }
+    }
+    if (this.hasSharedTechBaseFieldTarget) {
+      this.sharedTechBaseFieldTarget.classList.toggle("hidden", !shared)
     }
 
     if (themed) {

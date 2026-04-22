@@ -1,0 +1,43 @@
+<div id="shared_participant_roster"
+     class="bg-hud-bg-panel border border-hud-border rounded p-4">
+  <h2 class="font-hud-heading text-sm text-hud-text-dim uppercase tracking-wider mb-3">
+    Uczestnicy
+  </h2>
+  <% active = army_list.active_participants.order(:id) %>
+  <% if active.empty? %>
+    <p class="text-sm text-hud-text-muted">Brak uczestników. Dołącz, żeby zacząć budować listę.</p>
+  <% else %>
+    <ul class="space-y-2">
+      <% active.each do |participant| %>
+        <%# data-added-by-participant-id tags this row for the
+            shared_visibility_controller, which hides the owner-only leave
+            button on rows that don't match the viewer. %>
+        <li class="flex items-center justify-between gap-3"
+            data-added-by-participant-id="<%= participant.id %>">
+          <div class="flex items-center gap-2">
+            <% if participant.accepted? %>
+              <span class="text-hud-green text-sm">✓</span>
+            <% else %>
+              <span class="text-hud-text-muted text-sm">○</span>
+            <% end %>
+            <span class="font-hud-heading text-sm text-hud-text"><%= participant.display_name %></span>
+          </div>
+          <span data-shared-visibility-target="ownerOnly" hidden>
+            <%= button_to "Opuść",
+                leave_event_shared_army_list_shared_participant_path(event, participant),
+                method: :patch,
+                class: "hud-btn-danger px-2 py-0.5 rounded text-xs cursor-pointer",
+                form: { data: {
+                  controller: "confirm-modal",
+                  confirm_modal_title_value: "Opuść listę",
+                  confirm_modal_message_value: "Opuścić wspólną listę? Dodane przez Ciebie modele staną się niczyje.",
+                  confirm_modal_confirm_value: "Opuść",
+                  confirm_modal_cancel_value: "Anuluj"
+                } },
+                data: { action: "click->confirm-modal#show" } %>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</div>

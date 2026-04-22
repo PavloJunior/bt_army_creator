@@ -1,10 +1,12 @@
 class ArmyListItemsController < ApplicationController
   include ArmyListOwnership
+  include SharedParticipantAuth
 
   before_action :set_event
   before_action :set_army_list
-  before_action :authorize_army_list!
+  before_action :authorize_item_access!
   before_action :require_draft_status!
+  before_action :authorize_item_mutation!, only: [ :destroy, :update ]
 
   def create
     permitted = army_list_item_params
@@ -36,8 +38,16 @@ class ArmyListItemsController < ApplicationController
       miniature: miniature,
       variant_id: permitted[:variant_id]
     )
+    if @army_list.shared?
+      @item.added_by_participant = current_participant(@army_list)
+    end
 
     if @item.save
+      if @army_list.shared?
+        head :no_content
+        return
+      end
+
       @chassis = chassis
       compute_chassis_locals(@chassis)
       @over_cap = @item.exceeds_point_cap?
@@ -67,6 +77,12 @@ class ArmyListItemsController < ApplicationController
 
     if @item.update(skill_params)
       ensure_card_exists(@item)
+
+      if @army_list.shared?
+        head :no_content
+        return
+      end
+
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to event_army_list_path(@event, @army_list) }
@@ -88,7 +104,13 @@ class ArmyListItemsController < ApplicationController
   def destroy
     @item = @army_list.army_list_items.find(params[:id])
     @chassis = @item.miniature.chassis
+    shared = @army_list.shared?
     @item.destroy
+
+    if shared
+      head :no_content
+      return
+    end
 
     compute_chassis_locals(@chassis)
 
@@ -107,11 +129,16 @@ class ArmyListItemsController < ApplicationController
     @available_count = chassis.miniatures_pool.where.not(id: excluded_ids).count
     @total_count = chassis.miniatures_pool.count
     faction_filter = @army_list.army_list_factions.pluck(:faction_mul_id).presence
-    @variants = @event.available_variants_for_chassis(chassis, tech_base: @army_list.tech_base, faction_mul_ids: faction_filter)
+    # event_side must be passed through — on themed events the side's factions
+    # are what scope the available variants. Omitting it falls back to the
+    # event-level faction restrictions (which are empty for themed events) and
+    # variants from other sides' factions leak into the list.
+    event_side = @army_list.event_side
+    @variants = @event.available_variants_for_chassis(chassis, tech_base: @army_list.tech_base, faction_mul_ids: faction_filter, event_side: event_side)
     @chassis = chassis
 
     @sibling_chassis_data = chassis.sibling_chassis.map do |sibling|
-      sibling_variants = @event.available_variants_for_chassis(sibling, tech_base: @army_list.tech_base, faction_mul_ids: faction_filter)
+      sibling_variants = @event.available_variants_for_chassis(sibling, tech_base: @army_list.tech_base, faction_mul_ids: faction_filter, event_side: event_side)
       {
         chassis: sibling,
         available_count: @available_count,
@@ -149,5 +176,28 @@ class ArmyListItemsController < ApplicationController
       redirect_to event_army_list_path(@event, @army_list),
                   alert: "Nie można modyfikować zgłoszonej lub nieaktywnej listy."
     end
+  end
+
+  def authorize_item_access!
+    if @army_list.shared?
+      unless current_participant(@army_list) || admin_signed_in?
+        redirect_to event_path(@event),
+                    alert: "Dołącz do listy, aby móc ją edytować."
+      end
+    else
+      authorize_army_list!
+    end
+  end
+
+  def authorize_item_mutation!
+    return unless @army_list.shared?
+    return if admin_signed_in?
+
+    item = @army_list.army_list_items.find(params[:id])
+    viewer = current_participant(@army_list)
+    return if item.added_by_participant_id.nil? # unclaimed is fair game
+    return if viewer && viewer.id == item.added_by_participant_id
+
+    head :forbidden
   end
 end
